@@ -1,0 +1,3 @@
+.. toctree::
+
+    visualization.rst

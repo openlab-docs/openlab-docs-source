@@ -1,0 +1,251 @@
+권한
+=========================================
+
+IRIS는 유저, 데이터베이스, 테이블 기준으로 접속 권한을 지정할 수 있습니다. 기본적인 권한 설정은 관리자 권한을 가진 유저만 사용이 가능하며, 일반 사용자의 경우 GRANT 권한이 존재할 경우 다른 사용자에게 권한을 할당 할 수 있습니다.
+
+유저 , 데이터베이스, 테이블 순으로 권한 레벨이 존재합니다. 이 때, 유저 권한을 가장 높은 레벨의 권한으로 판단하며, 테이블 권한을 가장 권한으로 판단을 합니다.
+
+유저 권한
+-----------------------------------------
+유저 권한은 최고 레벨 권한에 해당 됩니다. 만약 유저 가 SELECT권한을 가지고 있을 경우에는 IRIS에 존재하는 모든 테이블을 검색할 수 있게 됩니다.
+
+.. table:: 유저 권한 정보
+
+    ==============  ===
+    컬럼            설명
+    CREATE_PRIV     데이터베이스, 테이블 생성 허용 여부
+    DROP_PRIV       데이터베이스, 테이블 삭제 허용 여부
+    SELECT_PRIV     SELECT 쿼리의 허용 여부
+    INSERT_PRIV     INSERT 쿼리의 허용 여부
+    UPDATE_PRIV     UPDATE 쿼리의 허용 여부
+    DELETE_PRIV     DELETE 쿼리의 허용 여부
+    ALTER_PRIV      ALTER TABLE의 허용 여부
+    GRANT_PRIV      GRANT의 허용 여부
+    ==============  ===
+
+위의 8개 권한을 모두 가지고 있을 경우 해당 계정을 관리자라 칭하며, 관리지만 유저를 생성, 관리할 수 있습니다.
+
+유저 권한 변경
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+유저 권한은 관리자만 변경이 가능하며, 권한을 변경하기 위해서는 update쿼리를 사용해야 합니다.
+
+아래는 관리자 계정으로 접속하여 test 유저의 SELECT_PRIV 권한을 할당하는 일련의 과정을 나열한 내용 입니다.
+
+.. code::
+
+    iplus> .user list
+    Ret : +OK Success
+
+
+     HOST    USER    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ====================================================================================================================================
+     *       root    1              1            1              1              1              1              1             1
+     *       test    0              0            0              0              0              0              0             0
+    ====================================================================================================================================
+
+    2 row in set
+
+    0.6065 sec
+
+    iplus> update sys.sys_users set select_priv = 1 where user = 'test';
+    Ret : +OK
+
+    0.6666 sec
+
+    iplus> .user list
+    Ret : +OK Success
+
+
+     HOST    USER    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ====================================================================================================================================
+     *       root    1              1            1              1              1              1              1             1
+     *       test    0              0            1              0              0              0              0             0
+    ====================================================================================================================================
+
+    2 row in set
+
+    0.6222 sec
+
+
+데이터베이스 권한
+-----------------------------------------
+데이터베이스 권한은 데이터베이스 내에 존재하는 모든 테이블에 공통적으로 적용이 됩니다.
+
+.. table:: 데이터베이스 권한 정보
+   
+    ==============  === 
+    권한            설명
+    CREATE_PRIV     테이블의 생성 허용 여부
+    DROP_PRIV       테이블 삭제 허용 여부
+    SELECT_PRIV     SELECT 쿼리의 허용 여부
+    INSERT_PRIV     INSERT 쿼리의 허용 여부
+    UPDATE_PRIV     UPDATE 쿼리의 허용 여부
+    DELETE_PRIV     DELETE 쿼리의 허용 여부
+    ALTER_PRIV      ALTER TABLE의 허용 여부
+    GRANT_PRIV      GRANT의 허용 여부
+    ==============  === 
+
+권한 설정
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터베이스에 권한을 설정하기 위해서는 다음과 같은 쿼리를 사용합니다.
+
+.. code::
+
+    grant {priv} on {database}.* to {user}@{host};
+
+- PRIV: ALL, CREATE, DROP, SELCT, INSERT, UPDATE, DELETE, ALTER, GRANT 사용
+- DATABASE: 권한을 설정할 데이터베이스이름
+- USER: 권한을 할당할 계정
+- HOST: user의 HOST 정보
+
+다음은 TEST계정에 TEST2데이터베이스의 모든 권한을 할당하는 일련의 과정 입니다.
+
+.. code ::
+
+    iplus> .database list
+    Ret : +OK Success
+
+
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     ROOT             *
+     TEST
+     TEST2
+     SYS
+    =====================================
+
+    4 row in set
+
+    0.0368 sec
+
+    iplus> select * from sys.sys_db_priv;
+    Ret : +OK Success
+
+
+     USER    HOST_IP    DB_NAME    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    DELETE_PRIV    UPDATE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ==================================================================================================================================================
+     test    *          D3         1              1            1              1              1              1              1             1
+    ==================================================================================================================================================
+
+    1 row in set
+
+    0.6682 sec
+
+    iplus> grant all on test2.* to test@*;
+    Ret : +OK GRANT test@TEST2 has granted
+
+    0.6093 sec
+
+    iplus> select * from sys.sys_db_priv;
+    Ret : +OK Success
+
+
+     USER    HOST_IP    DB_NAME    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    DELETE_PRIV    UPDATE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ==================================================================================================================================================
+     test    *          D3         1              1            1              1              1              1              1             1
+     test    *          D6         1              1            1              1              1              1              1             1
+    ==================================================================================================================================================
+
+    2 row in set
+
+    0.6725 sec
+
+
+권한 해제
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터베이스의 권한을 해제하기 위해서는 다음과 같은 쿼리를 사용합니다.
+
+.. code::
+
+    revoke {priv} on {database}.* from {user}@{host};
+
+- PRIV: ALL, CREATE, DROP, SELCT, INSERT, UPDATE, DELETE, ALTER, GRANT 사용
+- DATABASE: 권한을 설정할 데이터베이스이름
+- USER: 권한을 할당할 계정
+- HOST: user의 HOST 정보
+
+다음은 test 계정에 대해서 TEST2 데이터베이스의 모든 권한을 해제하는 일련의 과정 입니다.
+
+.. code::
+
+    iplus> select * from sys.sys_db_priv;
+    Ret : +OK Success
+    
+    
+     USER    HOST_IP    DB_NAME    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    DELETE_PRIV    UPDATE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ==================================================================================================================================================
+     test    *          D3         1              1            1              1              1              1              1             1
+     test    *          D6         1              1            1              1              1              1              1             1
+    ==================================================================================================================================================
+    
+    2 row in set
+    
+    0.6725 sec
+    
+    iplus> revoke all on test2.* from test@*;
+    Ret : +OK REVOKE test@TEST2 has granted
+    
+    0.6101 sec
+    
+    iplus> select * from sys.sys_db_priv;
+    Ret : +OK Success
+    
+    
+     USER    HOST_IP    DB_NAME    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    DELETE_PRIV    UPDATE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ==================================================================================================================================================
+     test    *          D3         1              1            1              1              1              1              1             1
+     test    *          D6         0              0            0              0              0              0              0             0
+    ==================================================================================================================================================
+    
+    2 row in set
+    
+    0.6074 sec
+
+
+테이블 권한
+-----------------------------------------
+
+테이블 단위로 사용자에게 권한을 할당할 수 있습니다.
+
+.. table:: 데이터베이스 권한 정보
+
+    ==============  ===
+    권한            설명
+    CREATE_PRIV     CREATE 쿼리의 허용 여부
+    DROP_PRIV       DROP 쿼리의 허용 여부
+    SELECT_PRIV     SELECT 쿼리의 허용 여부
+    INSERT_PRIV     INSERT 쿼리의 허용 여부
+    UPDATE_PRIV     UPDATE 쿼리의 허용 여부
+    DELETE_PRIV     DELETE 쿼리의 허용 여부
+    ALTER_PRIV      ALTER TABLE의 허용 여부
+    GRANT_PRIV      GRANT의 허용 여부
+    ==============  ===
+
+권한 설정
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터베이스에 권한을 설정하기 위해서는 다음과 같은 쿼리를 사용합니다.
+
+.. code::
+
+    grant {priv} on {database}.{table} to {user}@{host};
+
+- PRIV: ALL, CREATE, DROP, SELCT, INSERT, UPDATE, DELETE, ALTER, GRANT 사용
+- DATABASE: 테이블이 포함되어 있는 데이터베이스 일이름
+- TABLE: 권한을 설정할 테이블 이름
+- USER: 권한을 할당할 계정
+- HOST: user의 HOST 정보
+
+권한 해제
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터베이스의 권한을 해제하기 위해서는 다음과 같은 쿼리를 사용합니다.
+
+.. code:;
+
+    revoke {priv} on {database}.{table} from {user}@{host};
+
+- PRIV: ALL, CREATE, DROP, SELCT, INSERT, UPDATE, DELETE, ALTER, GRANT 사용
+- DATABASE: 테이블이 포함되어 있는 데이터베이스 일이름
+- TABLE: 권한을 설정할 테이블 이름
+- USER: 권한을 할당할 계정
+- HOST: user의 HOST 정보
+

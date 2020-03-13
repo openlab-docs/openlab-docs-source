@@ -1,0 +1,1008 @@
+iplus
+=========================================
+
+
+ipuls 사용하기
+-----------------------------------------
+iplus는 IRIS 사용자가 원격의 클라이언트에서 IRIS에 접속하여 IRIS를 제어하고 관리하거나 데이터를 조회하는 명령을 실행할 수 있는 CLI(Command Line Interface) 툴입니다. iplus는 마스터 노드 혹은 데이터 노드에 접속하여 실행할 수 있습니다.
+
+계정 정보를 이용한 접속
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    [iris@master01 ~]$ iplus
+    Usage:
+        iplus user[@host[:port]]
+        iplus < file
+
+상기의 화면에서와 같이, iplus 실행 시 사용하는 아규먼트(인자)는 다음과 같습니다. 
+
+- user: iplus에 접속하기 위한 사용자 ID (필수)
+- host: 마스터 노드의 호스트 명 (옵션)
+- port: 마스터 노드의 LISTENER 포트 번호 (옵션)
+
+iplus를 상기의 파라미터 및 패스워드와 함께 입력하여 실행하면 아래와 같이 iplus> 콘솔이 나타납니다. 만일, host와 port 정보를 입력하지 않고 iplus를 실행하면, IRIS는 환경 설정 파일은 config에 정의된 마스터 노드의 IP 주소와 LISTNER의 포트로 자동으로 접속하게 됩니다.
+
+.. code::
+
+    [iris@master ~]$ iplus test
+    Password:
+    Connecting to IRIS(test@127.0.0.1:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    iplus>
+
+iplus 에서 사용할 수 있는 명령은 아래 화면과 같이 .h 혹은 .help를 입력하여 확인할 수 있습니다. 각 명령에 대한 자세한 설명은 아래 표를 참조하시기 바랍니다.
+
+.. code::
+
+    iplus> .h
+    
+    HELP
+    =======================================================
+    .h / .help                     show this message
+    .i / .info                     show IRIS connection information
+    .q / .quit                     quit iplus console
+    .history                       print command(query) history
+    .sep <f sep> <r sep>           change seperator
+                                   <f sep> : field seperator
+                                   <r sep> : record seperator
+    .field_sep <f sep>             change field seperator
+    .record_sep <r sep>            change record seperator
+    .width <num> <num> ...         set column widths
+    .load <t> <k> <p> <c> <d>      load data
+                                   <t> : table
+                                   <k> : partition key
+                                   <p> : partition date
+                                   <c> : control file path
+                                   <d> : data file path
+    .spool [filename]              output to file
+                                   if filename is empty, output to console
+    .whoami                        print current user id
+    .database                      database command
+                                   more infomation with -h
+    .table                         table command
+                                   more infomation with -h
+    .vacuum                        vacuum command
+                                   more infomation with -h
+    .session                       session command
+                                   more infomation with -h
+    .error                         error command
+                                   more infomation with -h
+    .node                          node command
+                                   more infomation with -h
+    .statistics                    system monitor command
+                                   more infomation with -h
+    .system                        system command
+                                   more infomation with -h
+    .config                        config command
+                                   more infomation with -h
+    .noti                          noti command
+                                   more infomation with -h
+    !<shell command>               execute shell command
+    @<sequence file>               run sequence file
+
+iplus의 명령어는 iplus에서만 사용 가능한 일반 명령어와 iplus는 물론, API에서도 실행할 수 있는 Dot Command로 구분할 수 있으며, 일반적인 쿼리문도 실행할 수 있습니다. 아래는 iplus에 접속하여 Dot Command를 실행한 예를 보여주고 있습니다.
+
+.. code::
+
+    [iris@master01 IPlus]$ iplus test
+    Password:
+    Connecting to IRIS(test@192.168.123.58:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    iplus> .whoami
+    Ret : +OK Success
+    
+    
+     USER_NAME    CONNECTED_IP      DB_NAME    DB_REALNAME
+    =========================================================
+     test         192.168.123.58    D2         TEST
+    =========================================================
+    
+    1 row in set
+    
+    0.0158 sec
+
+상기의 화면과 같이, iplus에서 명령어를 실행하면, 명령어 실행 결과가 출력된 후에 명령어를 실행하기 위하여 소요된 시간이 표시됩니다. 소요시간은 쿼리의 실행 및 데이터를 화면에 출력하는 시간을 포함하고 있기 때문에 SELECT 쿼리 등, 대량의 데이터를 조회하는 경우, API에서 데이터를 Fetch하는 시간과는 다를 수 있습니다
+
+.. table:: iplus 전용 명령어
+    :widths: 20 80
+
+    ==================  ===
+    명령어              설명
+    .v                  | IRIS 버전 정보를 표시합니다
+    .i                  | iplus로 IRIS에 접속하는 사용자 호스트의 IP 주소 및 포트 정보를 출력합니다.
+    .q                  | iplus 를 종료하고 콘솔에서 운영체제로 리턴합니다.
+    .history            | iplus에 접속하여 실행한 커맨트 혹은 쿼리 히스토리를 표시합니다.
+                        | .h로 입력하여도 동일한 결과가 표시됩니다.
+    .sep                | iplus를 사용하여 IRIS로 데이터를 직접 로딩하는 경우, 로딩하는 데이터의 구분자를 지정할 수 있습니다. 이때 데이터 파일을 구성하는 레코드와 각 레코드의 필드 구분자를 동일하게 지정합니다.
+    .field_sep          | iplus를 사용하여 데이터를 로딩할 경우, 필드 구분자를 지정합니다.
+    .record_sep         | iplus를 사용하여 데이터를 로딩할 경우, 레코드 구분자를 지정합니다.
+    .width              | iplus에서 SELECT 쿼리문을 실행할 경우, 출력되는 데이터의 컬럼간의 폭(캐릭터수)을 지정합니다.
+    .load               | iplus를 사용하여 데이터를 IRIS에 직접 로딩하는 명령어입니다. 데이터 로딩 시, 아래의 옵션을 지정합니다.
+
+                        - <t>: 테이블명을 지정합니다. 
+                        - <k>: partitionkey 값을 정의합니다.
+                        - <p>: partitiondate 값을 정의합니다.
+                        - <c>: 데이터 파일의 각 컬럼명이 정의된 파일의 경로를 지정합니다.
+                        - <d>: 데이터 파일의 경로를 지정합니다.
+    .spool              iplus에서 출력되는 내용을 파일에 저장하고자 할 경우에 사용합니다. 해제 시, [filename]을 입력하지 않고 .spool 명령어를 실행하면 다시 화면에 출력됩니다.
+    !<shell command>    iplus에서 shell command를 실행하고자 할 경우에 사용합니다.
+    @<sequence file>    쿼리문을 작성하여 파일로 저장한 후, 해당 파일을 iplus에서 실행할 경우에 사용합니다.
+    ==================  ===
+
+
+.. table:: dot command
+    :widths: 10 80
+
+    ==============  ===
+    명령어          설명
+    .whoami         | 현재 iplus의 사용자 ID, 접속한 IP, 데이터베이스 이름 표시합니다.
+    .database       | 데이터베이스의 정보를 조회하기 위한 명령어 입니다.
+    .table          | 테이블의 정보 조회, 스키마 변경 등 테이블 관리를 위한 명령어입니다.
+    .vacuum         | 블럭 파일을 최적화 하기 위한 명령어 입니다.
+    .session        | 특정 계정의 쿼리 이력 등 각 세션에 대한 조회 및 현재 실행중인 세션을 강제로 종료할 수 있습니다.
+    .error          | IRIS에서 발생된 에러 정보를 확인할 수 있습니다.
+    .node           | 각 노드의 상태 및 상태 변경이 가능합니다.
+    .statistics     | IRIS 시스템 및 테이블에 대한 통계 정보를 제공합니다.
+    .system         | 각 노드의 CPU, 메모리 등 자원에 용량 및 사용량 정보를 제공합니다.
+    .config         | 현 상태의 IRIS 설정 값을 제공합니다.
+    .noti           | 노드의 상태가 변경되면, 상태 변경에 대한 원인 (예를 들어, swap 메모리가 설정된 값을 초과)에 대한 정보가 포함된 로그 파일(\*.busy, \*.info, \*.warning, \*.error 등)이 noti 디렉토리에 저장됩니다. .noti 명령어는 noti 디렉토리에 저장된 로그 파일 목록과 상세 정보를 조회할 수 있는 기능을 제공합니다.
+    ==============  ===
+
+
+
+seq파일을 이용한 실행
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+seq파일은 쿼리가 순차적으로 나열된 파일을 의미합니다. 사용자는 실행하고자 하는 일련의 쿼리들을 하나의 텍스트 파일에 기록을 한 이후 해당 파일을 iplus를 통해 실행할 수 있습니다.
+
+만약 다음과 같이 seq 파일을 생성되었다고 가정을 하면, 
+
+.. code::
+
+    [iris@master ~]$ cat whoami.seq
+    .whoami
+
+다음과 같이 whoami.seq 파일을 iplus를 통해 실행할 수 있습니다. 
+
+.. code::
+
+    [iris@master01 ~]$ iplus test < whoami.seq
+    Password:
+    Connecting to IRIS(eva@192.168.100.180:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    Ret : +OK Success
+    
+    
+    USER_NAME    CONNECTED_IP      DB_NAME    DB_REALNAME
+    =========================================================
+     test         192.168.123.58    D2         TEST
+    =========================================================
+    
+    1 row in set
+    
+    0.0197 sec
+    
+    Goodbye.
+
+seq 파일에는 여러 줄의 쿼리를 사용할 수 있습니다. seq파일을 이용할 때 주의해야 하는 점은 여려 줄의 쿼리를 사용하여 seq파일을 생성할 경우 앞쪽의 쿼리가 실패하더라도 뒷쪽의 쿼리를 실행 한다는 점입니다.
+
+
+접속 계정 정보 확인
+-----------------------------------------
+.whoami명령어를 이용하면 IRIS로 접속하기 위해 사용된 계정정보를 확인할 수 있습니다.
+
+.. code::
+
+    iplus> .whoami
+    Ret : +OK Success
+    
+    
+     USER_NAME    CONNECTED_IP      DB_NAME    DB_REALNAME
+    =========================================================
+     test         192.168.123.58    D2         TEST
+    =========================================================
+    
+    1 row in set
+    
+    0.0248 sec
+
+.. table:: .database 명령어
+    :widths: 30 70
+
+    ==============  ===
+    컬럼            설명
+    USER_NAME       접속에 사용된 사용자 ID
+    CONNECTED_IP    접속에 사용된 IP
+    DB_NAME         IRIS에서 관리하고 있는 데이터베이스 이름
+    DB_REALNAME     사용자가 접속한 데이터베이스 이름
+    ==============  ===
+
+
+사용자 관리하기
+-----------------------------------------
+IRIS 관리자는 IRIS에서 제공하는 .user 명령어를 이용하여 IRIS의 사용자 정보를 관리할 수 있습니다. 사용자 정보를 관리하기 위해서는 IRIS 관리자 계정으로 접속합니다. 
+
+사용자 리스트 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+현재 iplus에 접속한 사용자 리스트를 출력하는 명령어는 다음과 같으며, IRIS 관리자 계정에서만 실행 가능합니다
+
+.. code::
+
+    iplus> .user list
+    Ret : +OK Success
+    
+    
+     HOST    USER    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ====================================================================================================================================
+     *       root    1              1            1              1              1              1              1             1
+     *       test    0              0            0              0              0              0              0             0
+    ====================================================================================================================================
+    
+    2 row in set
+    
+    0.0508 sec
+
+상기의 화면에서와 같이 각 사용자별로 권한에 대한 정보가 출력되며, 각 컬럼에 대한 설명은 아래 표와 같습니다. 
+
+.. table:: 사용자 정보
+    :widths: 20 80
+
+    ==============  ===
+    컬럼            설명
+    HOST            해당 사용자가 iplus로 접속이 허용된 클라이언트 호스트의 IP 정보를 나타냅니다. 만일, \*로 표시되어 있다면 모든 호스트에서 접속 가능합니다.
+    USER            사용자 ID
+    CREATE_PRIV     CREATE TABLE의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    DROP_PRIV       DROP TABLE의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    SELECT_PRIV     SELECT 쿼리의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    INSERT_PRIV     INSERT 쿼리의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    UPDATE_PRIV     UPDATE 쿼리의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    DELETE_PRIV     DELETE 쿼리의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    ALTER_PRIV      ALTER TABLE의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    GRANT_PRIV      GRANT의 허용 여부를 지정합니다. (1: 허용, 0: 금지)
+    ==============  ===
+
+사용자 추가하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+새로운 사용자를 추가하기 위한 명령어는 다음과 같으며, IRIS 관리자 계정에서만 실행 가능합니다.
+
+.. code::
+
+    iplus> .user add {user_id}:{user_pass}@{host}
+
+- USER_ID: 추가하는 사용자의 ID
+- USER_PASS: 추가하는 사용자의 패스워드
+- HOST: 해당 사용자가 어느 호스트에서 접속할 것인지 IP 정보를 지정합니다. 동일 사용자가 접속하는 호스트의 IP 정보가 상이할 경우, 접속이 제한되므로 * 로 설정할 것을 권장합니다.
+
+아래 화면은 새로운 사용자를 추가한 후, .user list 명령어로 확인하는 과정을 보여주고 있습니다
+
+.. code::
+
+    iplus> .user list
+    Ret : +OK Success
+    
+    
+     HOST    USER    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ====================================================================================================================================
+     *       root    1              1            1              1              1              1              1             1
+     *       test    0              0            0              0              0              0              0             0
+    ====================================================================================================================================
+    
+    2 row in set
+    
+    0.0508 sec
+    
+    iplus> .user add iris_test:iris_test@*
+    Ret : +OK ADDUSER iris_test@* has added
+    
+    0.0832 sec
+    
+    iplus> .user list
+    Ret : +OK Success
+    
+    
+     HOST    USER         CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    =========================================================================================================================================
+     *       root         1              1            1              1              1              1              1             1
+     *       test         0              0            0              0              0              0              0             0
+     *       iris_test    0              0            0              0              0              0              0             0
+    =========================================================================================================================================
+    
+    3 row in set
+    
+    0.0459 sec
+
+사용자 패스워드 변경하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+사용자의 패스워드를 변경하는 명령어는 다음과 같습니다. IRIS 관리자는 모든 사용자의 패스워드를 변경할 수 있으며, 일반 사용자는 자신의 패스워드만 변경할 수 있습니다.
+
+.. code::
+
+    iplus> .user password {user_id}:{new_passwd}@{host}
+
+- USER_ID: 추가하는 사용자의 ID
+- USER_PASS: 추가하는 사용자의 패스워드
+- HOST: 해당 사용자가 접속하는 호스트의 IP 정보
+
+아래 화면은 특정 사용자의 패스워드를 변경하는 예를 보여주고 있습니다. 일반 사용자는 자신의 패스워드를 변경할 수 있지만, root 사용자의 패스워드를 변경하고자 할 경우, 에러가 발생합니다.
+
+.. code::
+
+    [iris@master01 IPlus]$ iplus iris_test
+    Password:
+    Connecting to IRIS(iris_test@192.168.123.58:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    iplus> .user password iris_test:iris_test2@*
+    Ret : +OK PASSWORD iris_test:iris_test2@* password(s) has modified
+    
+    0.0854 sec
+
+사용자 삭제하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+기존 사용자를 삭제하기 위한 명령어는 다음과 같으며, IRIS 관리자 계정에서만 실행 가능합니다.
+
+.. code::
+
+    iplus> .user del {user_id}@{host}
+
+- USER_ID: 추가하는 사용자의 ID
+- HOST: 해당 사용자가 접속하는 호스트의 IP 정보
+
+아래 화면은 기존 사용자를 삭제한 후, 삭제 여부를 확인하는 과정을 보여주고 있습니다
+
+.. code::
+
+    iplus> .user list
+    Ret : +OK Success
+    
+    
+     HOST    USER         CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    =========================================================================================================================================
+     *       root         1              1            1              1              1              1              1             1
+     *       test         0              0            0              0              0              0              0             0
+     *       iris_test    0              0            0              0              0              0              0             0
+    =========================================================================================================================================
+    
+    3 row in set
+    
+    0.0590 sec
+    
+    iplus> .user del iris_test@*
+    Ret : +OK DELUSER iris_test@* has deleted
+    
+    0.2080 sec
+    
+    iplus> .user list
+    Ret : +OK Success
+    
+    
+     HOST    USER    CREATE_PRIV    DROP_PRIV    SELECT_PRIV    INSERT_PRIV    UPDATE_PRIV    DELETE_PRIV    ALTER_PRIV    GRANT_PRIV
+    ====================================================================================================================================
+     *       root    1              1            1              1              1              1              1             1
+     *       test    0              0            0              0              0              0              0             0
+    ====================================================================================================================================
+    
+    2 row in set
+    
+    0.0487 sec
+
+
+데이터베이스 관리하기
+-----------------------------------------
+IRIS 관리자는 IRIS에서 제공하는 database 관련 명령어를 이용하여 데이터베이스를 조회하고, 생성, 삭제 할 수 있습니다. 데이터베이스의 생성 및 삭제는 데이터베이스를 조작할 수 있는 권한을 가진 사용자만 실행할 수 있습니다. 데이터베이스 관리를 위하여 제공되는 명령어는 다음과 같습니다.
+
+.. table:: .database 명령어
+    :widths: 20 80
+
+    ==================  ===
+    명령어              설명
+    .database list      현재 접속한 계정이 접근 가능한 데이터베이스 목록을 출력 합니다.
+    .database current   현재 선택된 데이터베이스 이름을 출력 합니다.
+    use                 사용할 데이터베이스를 선택 합니다.
+    create database     데이터베이스를 생성 합니다.
+    drop database       데이터베이스를 삭제 합니다.
+    ==================  ===
+
+iplus를 이용하여 접속할 경우 기본적으로 계정명과 동일한 데이터베이스를 선택하여 접속 하지만, 계정명과 동일한 데이터베이스가 없거나, 권한이 없을 경우에는 DEFAULT 데이터베이스로 접속하게 됩니다. DEFAULT 데이터베이스에서는 테이블 생성 및 삭제가 불가능 하며, 사용자가 직접 use명령어를 통해 특정 데이터베이스를 선택해야 합니다.
+
+데이터베이스 리스트 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+기 생성된 데이터베이스 리스트를 출력하는 명령어는 다음과 같습니다. 사용자가 접속 가능한 데이터베이스만 목록으로 출력되며, 권한이 없는 데이터베이스는 목록에 출력되지 않습니다.
+
+.. code::
+
+    iplus> .database list
+
+아래는 관리자 계정으로 데이터베이스 리스트를 확인한 내용입니다.
+
+.. code::
+
+    [iris@master01 IPlus]$ iplus root
+    Password:
+    Connecting to IRIS(root@192.168.123.58:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+    ROOT             *
+     SYS
+    =====================================
+    
+    2 row in set
+    
+    0.0236 sec
+
+.. table:: .database list 실행 결과의 컬럼
+
+    ==================  ===
+    컬럼                설명
+    DATABASE_NAME       데이터베이스 명
+    CURRENT_DATABASE    현재 선택되어 있는 데이터베이스 표시, * 문자로 구분
+    ==================  ===
+
+
+선택된 데이터베이스 이름 확인
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+현재 접속된 데이터베이스 이름 확인하기 위해서는 아래와 같은 명령어를 사용하면 됩니다. 만약 아무 데이터베이스도 선택되지 않았을 경우에는 DEFAULT로 표가 됩니다.
+
+.. code::
+
+    iplus> .database current
+
+아래는 일반 사용자 계정으로 선택된 데이터베이스 이름을 확인하는 과정입니다.
+
+.. code::
+
+    iplus> .database current
+    Ret : +OK Success
+    
+    
+     DB_NAME
+    ===========
+     TEST
+    ===========
+    
+    1 row in set
+    
+    0.0177 sec
+
+
+데이터베이스 선택하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+사용자가 특정 데이터베이스를 선택하기 위해서는 아래와 같은 명령어를 사용하면 됩니다. 선택 가능한 데이터베이스목록은 .database list 명령어로 확인이 가능합니다.
+
+.. code::
+
+    iplus> use {database_name};
+
+- DATABASE_NAME: 선택하고자 하는 데이터베이스 이름
+
+아래는 관리자 계정으로 TEST 데이터베이스를 선택하는 과정 입니다.
+
+.. code::
+
+    [iris@master01 ~]$ iplus root
+    Password:
+    Connecting to IRIS(root@192.168.123.58:5050).
+    Connected to IRIS.
+    Enter ".help" for instructions
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+     ROOT             *
+     SYS
+    =====================================
+    
+    3 row in set
+    
+    0.0245 sec
+    
+    iplus> use TEST;
+    Ret : +OK Current Database is TEST:D2
+    
+    0.0189 sec
+    
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST             *
+     ROOT
+     SYS
+    =====================================
+    
+    3 row in set
+    
+    0.0237 sec
+
+데이터베이스 생성하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+새로운 데이터베이스를 생성하기 위해서는 다음과 같은 명령어를 사용합니다. 데이터베이스 이름은 대소문자 구분이 없고, 특수문자를 사용할 수 없습니다. 데이터베이스 생성은 관리자 권한을 가진 유저만 가능합니다.
+
+.. code::
+
+    iplus> create database {database_name}
+
+- DATABASE_NAME: 생성하고자 하는 데이터베이스 이름
+
+아래는 관리자 계정으로 NEW_DB 데이터베이스를 생성하는 과정 입니다.
+
+.. code::
+
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+     ROOT             *
+     SYS
+    =====================================
+    
+    3 row in set
+    
+    0.0256 sec
+    
+    iplus> create database NEW_DB;
+    Ret : +OK NEW_DB
+    
+    0.0805 sec
+    
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+     ROOT             *
+     NEW_DB
+     SYS
+    =====================================
+    
+    4 row in set
+    
+    0.0222 sec
+
+데이터베이스 삭제하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+기 생성되어 있는 데이터베이스를 삭제하기 위해서는 다음과 같은 명령어를 사용합니다. 데이터 베이스 삭제는 관리자 권한을 가진 유저만 가능하며, 데이터베이스에 테이블이 존재할 경우 데이터베이스를 삭제할 수 없습니다.
+
+.. code::
+
+    iplus> drop database {database_name};
+
+- DATABASE_NAME: 생성하고자 하는 데이터베이스 이름
+
+아래는 관리자 계정으로 NEW_DB 데이터베이스를 삭제하는 과정 입니다.
+
+.. code::
+
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+     ROOT             *
+     NEW_DB
+     SYS
+    =====================================
+    
+    4 row in set
+    
+    0.0259 sec
+    
+    iplus> drop database NEW_DB;
+    Ret : +OK NEW_DB
+    
+    0.1382 sec
+    
+    iplus> .database list
+    Ret : +OK Success
+    
+    
+     DATABASE_NAME    CURRENT_DATABASE
+    =====================================
+     TEST
+     ROOT             *
+     SYS
+    =====================================
+    
+    3 row in set
+    
+    0.0298 sec
+
+데이터 관리하기
+-----------------------------------------
+IRIS에 입력되는 데이터는 각 데이터 노드에 블록 파일 형태로 저장됩니다. 여기서, 블록 파일은 데이터를 로컬 테이블, partitionkey, partitiondate 으로 분류하여 저장하는 최소 단위입니다. IRIS에 데이터가 입력되면, 블록 파일을 생성한 후, 각 데이터 노드의 메모리에서 일정 시간 동안 유지하였다가 디스크로 이동하여 저장합니다. IRIS는 블록 파일을 생성하여 메모리에 적재하고, 디스크로 이동하며, 일정 기간이 경과된 블록 파일을 디스크에서 영구 저장하는 일련의 데이터 관리 절차를 자동으로 수행합니다.
+본 절에서는 블록 파일을 수동으로 삭제하는 방법과 상기의 데이터 관리 절차를 자동으로 수행하기 위하여, 블록 파일을 메모리에서 디스크로 이동하기 위한 설정, 그리고 디스크에 저장된 블록 파일의 자동 삭제를 위한 설정 방법에 대하여 기술하였습니다. IRIS 관리자는 모든 테이블을 관리할 수 있으나, 일반 사용자는 자신이 생성한 테이블만 삭제 등 관리할 수 있습니다.
+
+데이터 삭제하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터 노드에 저장된 블록 파일을 수동으로 삭제하기 위해서는 drop backend 명령어를 사용합니다. 사용자는 다음과 같은 3가지 방법으로 데이터를 삭제할 수 있습니다. 단, 사용자가 drop backend 명령어를 실행하는 즉시 데이터가 삭제되는 것은 아니기 때문에, 명령어를 실행하는 즉시 디스크의 용량이 늘어나지는 않습니다. 
+
+- 특정 테이블의 모든 데이터 삭제하기
+    특정 테이블에 저장된 데이터를 모두 삭제하려면 다음의 명령어를 실행합니다. 사용자는 테이블의 스키마는 유지한 채, 해당 테이블의 데이터를 모두 삭제합니다.
+
+    .. code::
+
+        iplus> drop backend {table_name};
+
+- 특정 partitionkey의 데이터 삭제하기
+    특정 테이블에서 특정 partitionkey를 갖는 데이터만 삭제하고자 할 경우, 아래와 같이 실행합니다. 여기서, 사용자는 하나의 partitionkey 값을 갖는 데이터만 삭제할 수 있습니다. 만일, 여러 개의 partitionkey값을 지정하면, 해당 partitionkey값을 갖는 모든 데이터를 삭제할 수 있습니다.
+
+    .. code::
+
+        iplus> drop backend {table_name} ( KEY = '{KEY_VALUE}' );
+        iplus> drop backend {table_name} ( KEY in ('{KEY_VALUE}', '{KEY_VALUE}', ... ));
+
+- 특정 partitiondate의 데이터 삭제하기
+    특정 partitiondate 혹은 partitiondate의 범위에 해당하는 데이터를 삭제하고자 할 경우, 아래와 같이 실행합니다. 아래의 예시는, 특정 테이블에서 partitiondate값이 '20130101000000'인 데이터를 삭제하거나, partitiondate값이 '20130101000000'보다 작은 모든 데이터를 삭제하는 방법을 보여주고 있습니다.
+
+    .. code::
+
+        iplus> drop backend {table_name} ( PARTITION = '20130101000000' );
+        iplus> drop backend {table_name} ( PARTITION < '20130101000000');
+        iplus> drop backend {table_name} ( PARTITION between '20130101000000' and '20130102000000');
+
+Drop backend 명령어를 통하여 데이터를 삭제한 후, 데이터의 삭제 여부를 확인하려면 마스터 노드에서 다음의 명령어를 사용합니다.
+
+.. code::
+
+    [iris@Master1 ~]$ ~/IRIS/bin/Admin/TablePartitionInfo --table {database_name}.{table_name}
+
+상기의 명령어는 특정 테이블의 파티션 정보를 확인할 수 있으며, 명령어 실행 결과로 출력되는 정보 중, Status 컬럼의 값으로 삭제 여부를 판단할 수 있습니다. 만일, 특정 파티션이 이미 삭제되었다면 목록에 나타나지 않습니다.
+
+.. code::
+
+    [iris@master01 Admin]$ ~/IRIS/bin/Admin/TablePartitionInfo --table TEST.LOCAL_TEST_TABLE
+      TABLE_ID    DB_NAME                TABLE_NAME   Key         Partition    Node ID      IP Address 1     Status
+    ================================================================================================================
+          T457       TEST          LOCAL_TEST_TABLE    k2    20110616000000          1    192.168.123.59          C
+          T457       TEST          LOCAL_TEST_TABLE    k4    20110616000000          1    192.168.123.59          C
+          T457       TEST          LOCAL_TEST_TABLE    k6    20110616000000          1    192.168.123.59 R$DB1522392203.8548291
+          T457       TEST          LOCAL_TEST_TABLE    k3    20110616000000          1    192.168.123.59          C
+          T457       TEST          LOCAL_TEST_TABLE    k5    20110616000000          1    192.168.123.59 R$DB1522392205.6798401
+          T457       TEST          LOCAL_TEST_TABLE    k7    20110616000000          1    192.168.123.59 R$DB1522392199.4232881
+
+상기의 예에서, Status 컬럼의 의미는 다음과 같습니다.
+
+- C: 데이터가 현재 사용 가능한 상태
+- R$yyyymmddHHMMSS: 데이터가 현재 삭제 중인 상태 (drop backend를 실행한 시각 정보) 
+
+데이터 이동/삭제옵션 설정하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+메모리에서 디스크로 데이터의 이동은 각 데이터 노드에서 동작하는 PL(Partition Locator) 프로세스에서 관리합니다. PL 프로세스는 사용자가 테이블을 생성하면서 입력한 ramexpire값과 데이터 이동을 위하여 참조할 데이터 이동 옵션을 비교하여 블록 파일을 메모리에서 디스크로 이동합니다. 
+마찬가지로, PR(Partition Remover) 프로세스는 디스크에 저장된 데이터 중, 일정 시간이 경과한 데이터를 삭제합니다. PR 프로세스는 사용자가 테이블을 생성하면서 입력한 diskexpire값을 기준으로 디스크에서 데이터를 삭제합니다.
+PL/PR 프로세스가 데이터를 이동하거나 삭제하기 위하여 참조하는 옵션은 아래 표와 같습니다. 또한, 아래 표에는 다음 예시의 파일에 대하여, 각 옵션별로 데이터를 이동하거나 삭제하는 방법이 어떻게 다른지에 대한 설명도 포함되어 있습니다.
+
+- ram expire time : 30 min
+- dst file name : TEST_TABLE_K1_20130101000000.DAT
+- dst file's info :
+- table name : TEST_TABLE
+- key : K1
+- partition : 20130101000000
+
+.. table:: 데이터 이동/삭제옵션
+
+    ==================  ===
+    옵션                설명
+    OFF                 데이터를 이동/삭제하지 않습니다.
+    LOCAL_TIME_BASE     데이터 노드의 시스템 시간을 기준으로, ramexpire/diskexpire에 정의한 시간이 경과한 파일을 디스크로 이동하거나, 디스크에서 삭제합니다.
+
+                        - 사용자가 옵션을 지정하지 않으면, LOCAL_TIME_BASE가 기본 옵션으로 자동 설정됩니다.
+                        - IRIS는 리눅스에서 제공하는 시스템 시간 동기화 방식을 사용하므로, 노드 간의 시간 오차는 1초 이내입니다.
+
+                        상기 예의 경우, 해당 데이터 노드의 시스템 시간이 20130101003000을 지나면 해당 파일을 디스크로 이동하거나, 디스크에서 삭제합니다.
+    PARTITION_BASE      | 가장 최근에 입력된 데이터의 partitiondate 시간을 기준으로, ramexpire/diskexpire에 정의한 시간이 경과한 파일을 디스크로 이동하거나 디스크에서 삭제합니다. 
+                        | 상기 예의 경우, 해당 파일이 저장된 데이터 노드의 partitiondate 값이 20130101003000인 파일이 생성되면, 즉 해당 노드에 TEST_TABLE_K1_20130101003000.DAT 파일이 생성되면 상기 예의 파일이 디스크로 이동되거나 디스크에서 삭제됩니다.
+    KEY_BASE            | PARTITION_BASE 옵션이 partitionkey의 구분없이 가장 최근의 partitiondate 시간을 기준으로 하는 반면, KEY_BASE는 각 partitionkey 단위로 구분하여 가장 최근에 입력된 데이터의 partitiondate 시간을 기준으로 ramexpire/diskexpire에 정의한 시간이 경과한 파일을 디스크로 이동하거나 디스크에서 삭제합니다.
+                        | 상기 예의 경우, 해당 파일이 저장된 데이터 노드에 partitionkey값이 ‘K1’이고, partitiondate값이 20130101003000인 파일이 생성되면, 즉 해당 노드에 TEST_TABLE_K1_20130101003000.DAT 파일이 생성되면 상기 예의 파일이 디스크로 이동되거나 디스크에서 삭제됩니다.
+    ==================  ===
+
+상기의 데이터 이동/삭제옵션을 설정하는 방법은 다음과 같습니다.
+
+- 기 설정된 옵션 확인하기
+    먼저, 아래와 같이, .table option 명령어를 사용하여 현재 데이터 이동 및 삭제와 관련하여 설정된 옵션을 확인할 수 있습니다. 아래의 명령어 실행 결과, RAM_OPTION이 데이터 이동 옵션이며, DSK_OPTION이 데이터 삭제 옵션입니다. 테이블 옵션 명령은 IRIS 관리자 혹은 일반 사용자에 대한 구분 없이, 모든 사용자에게 동일한 정보를 제공합니다.
+
+    .. code::
+
+        iplus> .table option LOCAL_TEST_TABLE
+        Ret : +OK Success
+        
+        
+         DB_NAME    TABLE_NAME                RAM_OPTION        DSK_OPTION
+        ==========================================================================
+                    $DEFAULT_TABLE_SETTING    PARTITION_BASE    LOCAL_TIME_BASE
+         TEST       LOCAL_TEST_TABLE
+        ==========================================================================
+        
+        2 row in set
+        
+        0.1533 sec
+
+    .table option 명령을 실행하면, $DEFAULT_TABLE_SETTING에 대한 정보가 출력됩니다. 이는 옵션을 설정하지 않은 테이블의 default에 해당되는 값을 의미합니다. 위의 예시 화면의 경우, LOCAL_TEST_TABLE에 옵션이 적용되지 않은 것을 확인할 수 있습니다. 이 경우, LOCAL_TEST_TABLE의 옵션은 $DEFAULT_TABLE_SETTING에 설정된 옵션을 따르게 됩니다. 즉, LOCAL_TEST_TABLE의 RAM_OPTION은 PARTITION_BASE, DSK_OPTION은 LOCAL_TIME_BASE로 자동 설정됩니다.
+
+- 디폴트 옵션 수정하기
+    디폴트 옵션 수정이란 .table option을 실행하여 출력된 $DEFAULT_TABLE_SETTING의 옵션 즉, 기본 옵션을 임의로 변경하는 것을 의미하며, iplus에 root 계정으로 접속한 사용자에 한하여 수정이 가능합니다. 디폴트 옵션을 수정하려면 아래 명령어를 사용합니다.
+
+    .. code::
+
+        iplus> .table option $DEFAULT_TABLE_SETTING [ram|disk] [ram_option|disk_option]
+
+    예를 들어, 이동 옵션, 즉 RAM의 ram_option을 OFF로 변경하고자 할 경우, 다음과 같이 실행할 수 있습니다.
+
+    .. code::
+
+        iplus> .table option $DEFAULT_TABLE_SETTING ram OFF
+        Ret : +OK
+        0.3987 sec
+
+        iplus> .pm list
+        Ret : +OK Success
+        TABLE_NAME RAM_OPTION DSK_OPTION
+        ===========================================================
+        $DEFAULT_TABLE_SETTING OFF LOCAL_TIME_BASE
+        ===========================================================
+        1 row in set
+        0.2063 sec
+
+        iplus>
+
+- 테이블의 이동/삭제 옵션 설정하기
+    특정 테이블의 이동/삭제 옵션을 설정하려면 다음과 같이 명령어를 실행합니다. 이때, 사용자 계정별로 자신이 생성한 테이블의 이동/삭제 옵션만 수정할 수 있습니다. 단, IRIS 관리자는 모든 테이블의 옵션을 수정할 수 있습니다.
+
+    .. code::
+
+        iplus> .table option {table_name} [ram|disk] {option}
+
+    아래는 LOCAL_TEST_TABLE이라는 테이블의 옵션을 설정하는 예를 보여주고 있습니다.
+
+    .. code::
+
+        iplus> .table option
+        Ret : +OK Success
+
+
+         DB_NAME    TABLE_NAME                RAM_OPTION        DSK_OPTION
+        ==========================================================================
+                    $DEFAULT_TABLE_SETTING    PARTITION_BASE    LOCAL_TIME_BASE
+         TEST       LOCAL_TEST_TABLE
+        ==========================================================================
+
+        2 row in set
+
+        0.1532 sec
+
+        iplus> .table option LOCAL_TEST_TABLE ram LOCAL_TIME_BASE
+        Ret : +OK copy all success.
+
+        0.0644 sec
+
+        iplus> .table option
+        Ret : +OK Success
+
+
+         DB_NAME    TABLE_NAME                RAM_OPTION         DSK_OPTION
+        ===========================================================================
+                    $DEFAULT_TABLE_SETTING    PARTITION_BASE     LOCAL_TIME_BASE
+         TEST       LOCAL_TEST_TABLE          LOCAL_TIME_BASE
+        ===========================================================================
+
+        2 row in set
+
+        0.1572 sec
+
+세션 관리하기
+-----------------------------------------
+IRIS에서는 사용자가 요청한 하나의 쿼리를 세션으로 정의합니다. 만일, 특정 사용자가 iplus로 IRIS에 접속하여 다수의 쿼리를 동시에 실행하였다면, 동시에 실행되는 쿼리의 수만큼 세션이 생성됩니다. 본 절에서는 IRIS에서 사용자의 쿼리 요구에 따라 생성된 세션을 관리하는 방법에 대하여 설명합니다. IRIS 관리자는 모든 사용자의 세션을 관리할 수 있으나, 일반 사용자는 자신의 계정에 해당되는 세션만 관리할 수 있습니다. 
+IRIS에서 세션을 관리하기 위한 명령어는 다음과 같습니다.
+
+.. table:: .session 명령어
+
+    ==================  ===
+    명령어              설명
+    .session list       접속한 계정의 세션 히스토리를 조회합니다.
+    .session info       선택한 세션의 상세 정보 표시합니다.
+    .session term       특정 세션을 강제로 종료합니다.
+    ==================  ===
+
+.. code::
+
+    iplus> .session
+    Ret : +OK Success
+
+
+     HELP
+    ======================================================
+     session command help
+         list : show session list
+                ex) .session list [options]
+                you needs option help, .session list -h
+         info : show session detail info
+                ex) .session info [session id]
+         term : term targeted session
+                ex) .session term [session id]
+    ======================================================
+
+    8 row in set
+
+    0.0733 sec
+
+세션 히스토리 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IRIS에 생성된 세션의 히스토리를 확인하기 위한 명령어는 다음과 같으며, 아래 표에 각 옵션에 대한 설명을 참조하시기 바랍니다.
+
+.. code::
+
+    iplus> .session list -h
+    Ret : +OK Success
+
+
+     HELP
+    ====================================================
+     session list option help
+         -s, --stime : start time 14 digit
+                       default is onehour before time
+                       ex) 20140101000000
+         -e, --etime : end time 14 digit
+                       default is 99999999999999
+                       ex) 20140101000000
+         -t, --type  : session type
+                       [ START | END | ABN ]
+         -h, --help  : show this message
+    ====================================================
+
+    10 row in set
+
+    0.0591 sec
+
+.. table:: .session list 명령어의 옵션
+
+    ==============  ======================================  ===
+    옵션            사용법                                  설명
+    |               .session list                           최근 10개의 세션 히스토리를 조회합니다.
+    -r, --row       .session list -r {num}                  입력한 개수 만큼의 세션 정보를 표시합니다.
+    -s, --stime     .session list -s {yyyymmddHHMMSS}       설정한 시간 이후로 발생된 10개의 세션 히스토리를 조회합니다.
+    -e, --etime     .session list -e {yyyymmddHHMMSS}       설정한 시간 이전에 발생된 10개의 세션 히스토리를 조회합니다.
+    -t, --type      .session list -t [START | END | ABN]    설정한 세션과 동일한 type의 세션을 조회합니다.
+    ==============  ======================================  ===
+
+세션 리스트 명령어를 실행하면, 기본적으로 최근에 실행된 10개의 세션 히스토리가 출력됩니다. 만일, 더 많은 세션 히스토리를 보고자 할 경우, -r 옵션을 사용합니다. 예를 들어, 50개의 세션 히스토리를 출력하려면, 다음과 같이 실행합니다.
+
+.. code::
+
+    iplus> .session list –r 50
+
+아래는 세션 리스트 명령어를 실행한 결과 화면과 화면에 출력된 각 컬럼의 정보를 보여줍니다.
+
+.. code::
+
+    iplus> .session list
+    Ret : +OK Success
+    
+    
+     SID                         START_TIME        END_TIME          STYEP    NODE    PID      USER    IP                RESULT    QUERY_STRING
+    ==============================================================================================================================================
+     20180330071416_1_30107_1    20180330071416    20180330071417    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071417_1_30107_2    20180330071417    20180330071417    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071417_1_30107_3    20180330071417    20180330071417    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071417_1_30107_4    20180330071417    20180330071417    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071417_1_30107_5    20180330071417    20180330071417    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071416_1_30107_0    20180330071416    20180330071416    END      1       30107    test    127.0.0.1         +OK       INSERT
+     20180330071414_1_30029_0    20180330071414    20180330071415    END      1       30029    test    127.0.0.1         +OK       UPDATE
+     20180330071411_1_30011_0    20180330071411    20180330071411    END      1       30011    test    127.0.0.1         +OK       LOAD
+     20180330071358_1_29906_1    20180330071358    20180330071358    END      1       29906    root    192.168.123.58    +OK       session
+     20180330071345_1_29796_0    20180330071345    20180330071345    END      1       29796    test    127.0.0.1         +OK       INSERT
+    ==============================================================================================================================================
+    
+    10 row in set
+    
+    0.0847 sec
+
+상기의 화면은 세션 리스트 명령어를 실행하여 출력된 화면 예로서, 세션 히스토리는 다음과 같은 정보를 제공합니다.
+
+.. table:: 세션 정보
+
+    ==============  ===
+    컬럼            설명
+    SID             각 세션에 할당된 고유 ID 입니다.
+    QUERY_STRING    해당 세션에 실행된 쿼리문의 첫 번째 단어를 출력합니다. 일반적으로, 쿼리문의 길이는 길기 때문에 모든 세션 리스트를 출력하는 상기의 화면에 쿼리문 전체를 출력하는 것은 적절하지 않습니다. 따라서, .session list 명령에서는 쿼리문의 첫 번째 단어를 출력하여 해당 쿼리문의 유형을 판단할 수 있도록 합니다. 즉, 해당 세션의 쿼리문이 “SELECT TABLE_NAME, SCOPE,…”인 경우, 본 컬럼에는 ‘SELECT’가 출력됩니다. 만일, 쿼리문 전체에 대한 정보를 보려면, “2.7.2 세션 정보 보기”를 참조하시기 바랍니다.
+    START_TIME      해당 쿼리를 시작한 시간 정보
+    END_TIME        해당 쿼리를 종료한 시간 정보
+    STYPE           세션의 현재 상태를 보여줍니다. 
+
+                    - START: 세션 시작
+                    - END: 세션 종료
+                    - ABN: 비정상 종료
+    NODE            사용자가 요청한 쿼리가 어느 노드에서 실행되었는지 해당 노드 ID를 제공합니다. 사용자가 IRIS에 쿼리를 요청하면, 마스터 노드에서 임의의 데이터 노드를 선택하고, 선택된 데이터 노드는 분산된 데이터 노드에 쿼리를 요청하여 쿼리 결과를 취합한 후, 사용자에게 결과를 제공합니다. 여기서, NODE 컬럼은 쿼리를 분산 노드에 요청하고 결과를 취합하여 사용자에게 제공하는 노드의 ID를 의미합니다.
+    PID             해당 쿼리 실행을 담당하는 프로세스의 ID값
+    USER            해당 쿼리를 실행한 사용자의 계정 정보
+    IP              해당 쿼리의 실행을 요청한 사용자가 접속한 호스트의 IP 주소
+    RESULT          쿼리의 실행 결과
+
+                    - +OK: 쿼리가 성공적으로 종료되었음을 의미합니다.
+                    - -ERR: 쿼리 실행 중 에러가 발생하여 비정상 종료되었음을 의미합니다.
+
+                    여기서, +는 성공을 –는 실패를 의미하는 기호입니다.
+    ==============  ===
+
+세션 정보 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+상기의 .session list 명령이 세션 전체에 대하여 각 세션별 기초 정보를 제공하는데 반하여, 아래의 .session info 명령은 특정 세션에 대한 세부 정보, 즉 쿼리문과 쿼리 실행 결과의 상세 정보를 제공합니다. 만일, 쿼리 실행 중 에러가 발생하면, 에러 메시지도 함께 출력됩니다. 특정 세션의 상세 정보를 확인하기 위하여 사용하는 명령어는 다음과 같습니다.
+
+.. code::
+
+    .session info {session id}
+
+아래는 특정 세션의 세션 ID(SID)의 상세 정보를 보기 위한 방법을 제시하고 있습니다.
+
+.. code::
+
+    iplus> .session info 20180330071417_1_30107_3
+    Ret : +OK Success
+    
+    
+     SID                         START_TIME        END_TIME          STYEP    NODE    PID      USER    IP           RESULT    QUERY_STRING
+    ===========================================================================================================================================================================================================
+     20180330071417_1_30107_3    20180330071417    20180330071417    END      1       30107    test    127.0.0.1    +OK'\r'\n INSERT INTO LOCAL_TEST_TABLE (k, p, a) VALUES ('k5', '20110616000000', '0.1');
+    ===========================================================================================================================================================================================================
+    
+    1 row in set
+    
+    0.0707 sec
+
+위의 .session info 명령어 실행 결과, RESULT 컬럼에 쿼리 실행 결과에 대한 상세 내용이 출력되며, QUERY_STRING 컬럼에 쿼리문이 출력됩니다.
+
+세션 종료하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+현재 실행중인 특정 세션을 강제로 종료하는 방법은 다음과 같습니다.
+
+.. code::
+
+    iplus> .session term {session id}
+
+상기의 명령어는 종료하고자 하는 특정 세션의 ID를 확인한 후, 해당 세션을 종료할 수 있습니다. 아래 화면은 현재 실행중인 세션 중, 종료하고자 하는 세션 ID를 확인한 후, 해당 세션을 종료하는 예를 보여주고 있습니다.
+
+.. code::
+
+    iplus> .session list --type START
+    Ret : +OK Success
+    
+    SID QUERY_STRING START_TIME END_TIME STYPE NODE PID USER IP
+    RESULT
+    =========================================================================================================================
+    ==========
+    20160201001914_2_18633_0 LOAD 20160201001914 START 2 18633 test 127.0.0.1
+    =========================================================================================================================
+    ==========
+    1 row in set
+    0.1287 sec
+    
+    iplus> .session term 20160201001914_2_18633_0
+    Ret : +OK kill 20160201001914_2_18633_0 session.
+    1.6638 sec
+    
+    iplus>
+
+

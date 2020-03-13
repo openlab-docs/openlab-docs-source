@@ -1,0 +1,12 @@
+[submodule "docs/IRIS-Manual"]
+	path = docs/IRIS-Manual
+	url = https://github.com/mobigen/IRIS-Manual
+[submodule "docs/IRIS-FAQ"]
+	path = docs/IRIS-FAQ
+	url = https://github.com/mobigen/IRIS-FAQ
+[submodule "docs/IRIS-Tutorial"]
+	path = docs/IRIS-Tutorial
+	url = https://github.com/mobigen/IRIS-Tutorial
+[submodule "docs/IRIS-Usecase"]
+	path = docs/IRIS-Usecase
+	url = https://github.com/mobigen/IRIS-Usecase

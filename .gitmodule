@@ -1,0 +1,10 @@
+[submodule "IRIS-Manual"]
+	path = docs/IRIS-manual
+	url = https://github.com/mobigen/IRIS-Manual
+	branch = 2.1
+[submodule "IRIS-Tutorial"]
+	path = docs/IRIS-Tutorial
+	url = https://github.com/mobigen/IRIS-Tutorial
+[submodule "IRIS-FAQ"]
+	path = docs/IRIS-FAQ
+	url = https://github.com/mobigen/IRIS-FAQ

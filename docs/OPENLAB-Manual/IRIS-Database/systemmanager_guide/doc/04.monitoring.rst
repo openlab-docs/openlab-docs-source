@@ -1,0 +1,625 @@
+모니터링
+=========================================
+본 장에서는 IRIS 전용 모니터링 툴, 로그 정보 등을 이용하여, IRIS 시스템을 모니터하는 다양한 방법을 설명합니다.
+
+IRIS 노드의 상태 모니터하기
+-----------------------------------------
+IRIS 노드에 대한 모니터링을 위하여, 다음과 같이 두 가지 방법을 제공합니다. 본 절에서는 노드의 상태를 모니터하는 방법에 대하여 설명합니다.
+
+- 노드 상태 모니터링: 각 노드의 상태를 확인하여, 해당 노드를 현재 사용할 수 있는지 모니터할 수 있습니다.
+- 노드 리소스 모니터링: 각 노드에서 CPU, 메모리 등 리소스가 얼마나 사용되고 있는지 시스템 정보를 확인할 수 있습니다.
+
+IRIS를 구성하는 각 노드의 상태는 다음과 같이 두 가지 항목으로 구분하여 모니터합니다.
+
+- SYSTEM STATUS: 현재 각 노드의 리소스 사용 상태에 따라, 해당 노드가 적정하게 사용되고 있는지를 판단할 수 있도록 노드의 실제 상태를 표시합니다.
+- ADMIN STATUS: IRIS 관리자가 수동으로 설정한 노드의 상태, 즉 노드의 사용/격리 여부를 표시합니다.
+
+각 노드의 SM(System Monitor) 프로세스는 해당 노드의 CPU IOWAIT, LOAD AVERAGE, 메모리 사용량, 디스크 사용량 등 리소스 상태를 나타내는 시스템 정보를 수집하여, 마스터 노드의 EHD(Event Handler Daemon)에 주기적으로 전송합니다. Event Handler(EHD)는 수신된 시스템 정보를 기준으로, 아래 표와 같이 각 노드의 시스템 상태, 즉 SYSTEM STATUS를 업데이트합니다.
+
+.. table:: 노드의 시스템 상태
+    :widths: 20 80
+
+    ==========  ===
+    상태        설명
+    VALID	    - 현재 노드의 상태가 정상임을 나타냅니다.
+    READY       - 이 상태는 사용자가 수동으로 ADMIN STATUS를 ENABLE로 변경한 후, 시스템의 상태를 결정하기 전에 준비하는 단계입니다.
+                - IRIS 관리자가 NodeEnable 명령을 실행하면 노드의 상태가 READY 상태로 전환됩니다. 그러면, 마스터 노드의 EHD는 해당 노드의 SM으로 부터 시스템 정보가 수신되기를 기다립니다. 이후, 수신된 시스템 정보에 따라, BUSY, WAIT_RETRY가 될 수 있고, 이상이 없으면 마스터 노드-데이터 노드간 데이터(시스템 테이블, 글로벌 테이블) 동기화 후에 VALID로 전환됩니다.
+                - 이 상태는 아직 정상 여부를 판단할 수 없으므로 격리된 상태로 유지됩니다.
+    WAIT_RETRY  - SM으로부터 전송되는 시스템 정보를 EHD가 수신하지 못하거나, 혹은 SM에서 시스템 정보를 보내지 못하는 경우가 발생할 수 있습니다. VALID 상태의 데이터 노드에서, m6.config 파일의  [EHD]에 설정된 시간내에 시스템 정보가 수신되지 않을 경우, 노드의 상태가 WAIT_RETRY로 자동 변경됩니다. 해당 상태에서 대기 중, 데이터 노드로 부터 시스템 정보가 다시 수신되면 마스터 노드-데이터 노드간 데이터(시스템 테이블, 글로벌 테이블) 동기화 후에 VALID로 전환됩니다. 이 상태의 데이터 노드는 사용이 불가한 상태입니다. 
+                - 노드의 상태가 WAIT_RETRY 상태로 변경되면, ${M6_HOME}/proc/noti 디렉토리에 {YYYYMMDDHHMMSS}_{NODEIP}.RETRY 형태의 notification 파일이 생성되어 상세한 정보가 저장됩니다. Notification 파일에 대한 설명은 “표 4 7 이벤트 로그”를 참조하시기 바랍니다.
+    BUSY        - 해당 노드의 시스템 정보를 모니터한 결과, 리소스가 과도하게 사용되었을 때의 상태입니다. 이 상태에서는 해당 노드를 사용할 수 없도록 일시적으로 자동 격리됩니다.
+                - 노드의 상태를 BUSY로 변경하기 위하여 참조하는 설정 정보는 다음과 같습니다.
+                    - 노드의 리소스 상태가 마스터 노드의 ${M6_HOME}/conf/m6.config 파일에서 [EHD_BUSY_CONDITION_UPPER] 섹션에 설정된 값보다 큰 경우에 BUSY상태로 변경됩니다.
+                    - 노드의 리소스 상태가 마스터 노드의 ${M6_HOME}/conf/m6.config 파일에서 [EHD_BUSY_CONDITION_LOWER] 섹션에 설정된 값보다 작은 경우, 마스터 노드-데이터 노드간 데이터(시스템 테이블, 글로벌 테이블) 동기화 후에 VALID상태로 복귀합니다.
+                - 노드의 상태가 BUSY 상태로 변경되면, ${M6_HOME}/proc/noti 디렉토리에 {YYYYMMDDHHMMSS}_{NODEIP}.BUSY 형태의 notification 파일이 생성되어 상세한 정보가 저장됩니다. Notification 파일에 대한 설명은 “표 4 7 이벤트 로그”를 참조하시기 바랍니다.
+    INVALID     - 디스크 고장 등 심각한 오류 상황으로 인하여 격리되거나 혹은 사용자에 의하여 격리된 상태입니다. 이 상태의 데이터 노드는 사용이 불가한 상태입니다.
+                - 오류 상황이 복구되면, IRIS 관리자는 NodeEnable 명령을 실행하여 READY 상태로 변경합니다. 만일 수신된 시스템 정보가 정상이면, 마스터 노드-데이터 노드간 데이터(시스템 테이블, 글로벌 테이블) 동기화 후에 VALID로 변경됩니다.
+    ==========  ===
+
+아래 그림은 위의 표에서 설명한 시스템 정보에 따라 시스템의 상태가 전환되는 유형을 도식화한 것입니다.
+
+그림 4 1. 시스템 상태 전환 유형
+
+IRIS에서 각 노드의 상태를 확인하려면, 모비젠에서 자체 개발한 IRIS 노드 모니터링 툴인 ntop을 이용합니다. IRIS 관리자는 리눅스에서 iris 계정으로 로그인하여 ntop을 실행하여야 합니다. ntop은 각 노드의 상태 정보를 주기적으로 관리하는 Event Handler (EHD)로 부터 상태정보를 수집하여 IRIS 관리자에게 보여줍니다. 아래 화면은 마스터 노드에서 ntop을 실행한 예를 보여주고 있습니다. 
+
+.. code::
+
+    [iris@master ~]$ ntop
+    
+       NODE_ID,  SYS_STATUS,  ADM_STATUS,     UPDATE_TIME,    ...
+    ======================================================= ...
+    NODE:     0,       VALID,      ENABLE,  20150608052715, ...
+    NODE:     1,       VALID,      ENABLE,  20150608052716, ...
+
+ntop을 실행하면 노드의 상태와 리소스 상태를 모니터할 수 있는 다양한 정보가 출력됩니다. 이 중, 상기의 예시 화면은 노드의 상태를 모니터하기 위하여 사용되는 정보를 보여줍니다. 각 컬럼에 대한 설명은 아래 표와 같습니다.
+
+.. table:: 노드 상태 정보
+    :widths: 20 80
+
+    ==============  ===
+    컬럼            설명
+    NODE_ID         각 노드를 구분하는 아이디.
+
+                    - 마스터 노드는 0, 데이터 노드는 음이 아닌 정수로 표시되며, IRIS 설치 시 설정 파일에 기재합니다.
+                    - 데이터 노드의 ID는 IRIS 설치 후, 해당 노드의 m6.config에 수동으로 등록합니다. 노드 추가를 위하여 해당 노드에서 NodeAdd 명령을 실행하면, 해당 노드 정보가 마스터 노드에 전달되어, 마스터 노드의 시스템 테이블에 자동으로 저장됩니다.
+    SYS_STATUS      현재 노드의 시스템 상태, 즉 SYSTEM STATUS를 나타내며, 시스템의 상태는 위의 “표 4 1 노드의 시스템 상태”를 참조하시기 바랍니다.
+    ADM_STATUS      IRIS 관리자가 수동으로 결정한 노드의 상태입니다. ADM_STATUS를 변경하는 방법은 “오류! 참조 원본을 찾을 수 없습니다. 오류! 참조 원본을 찾을 수 없습니다.”를 참조하시기 바랍니다.
+
+                    - ENABLE: 마스터 노드와 데이터 노드 간에 통신이 가능하여 사용 가능한 상태임을 의미합니다.
+                    - DISABLE: 해당 노드를 격리시키겠다는 의미입니다. 해당 노드가 DISABLE되어 있다면 SYS_STATUS는 INVALID로 변경됩니다.
+    UPDATE_TIME     UPDATE_TIME은 해당 노드로부터 시스템 정보를 수신한 가장 최근의 시간을 의미합니다. 사용자가 ntop 명령어를 실행하면 10초마다 정보가 갱신되는데, 이 값이 변경되지 않는다면 해당 노드로 부터 시스템 정보가 수신되지 않는다는 것을 의미합니다. 만일, m6.config 파일의  [EHD]에 설정된 시간내에 시스템 정보가 수신되지 않을 경우 SYS_STATUS 는 WAIT_RETRY 로 변경됩니다.
+    ==============  ===
+
+아래 그림은 사용자가 노드의 상태를 ENABLE 혹은 DISABLE한 경우, 노드의 실제 상태(SYS_STATUS)가 어떻게 전환될 수 있는지를 보여줍니다. 
+
+ 
+그림 4 2. ADMIN STATUS 변경에 따른 SYSTEM STATUS 변화
+
+
+IRIS 노드의 리소스 정보 보기
+-----------------------------------------
+IRIS 노드의 리소스 정보를 보는 방법은 현재 리소스 사용 정보를 모니터하는 방법과 리소스 통계를 이용하여 과거의 리소스 사용 변화를 분석하는 방법이 있습니다.
+
+
+노드 리소스 모니터하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+각 노드의 현재 리소스 정보를 보려면 다음과 같은 명령어를 사용합니다.
+
+.. code::
+
+    [iris@master ~]$ ntop
+
+ntop 명령어는 앞 절에서 기술한 노드의 상태와 본 절에서 기술할 리소스 사용 정보를 제공합니다. 아래는 ntop 명령어를 실행하여 출력된 정보 중, 리소스 사용 정보와 관련된 정보를 보여주는 화면 예시입니다.
+
+.. code::
+
+    NODE_ID, ... UPDATE_TIME, IP , CPU(%), LOADAVG, MEM:P(%), MEM:F(%), DISK(%)
+    =======================================================================================================
+    NODE: 0, ... 20150615084143, 192.168.111.100, 2.83, 0.00, 84.07, ...
+    NODE: 1, ... 20150615084144, 192.168.111.201, 0.80, 0.00, 33.84, ...
+    NODE: 2, ... 20150615084141, 192.168.111.202, 0.80, 0.00, 36.31, ...
+
+.. table:: 노드의 리소스 정보
+    :widths: 20 80
+
+    ==============  ===
+    컬럼            설명
+    NODE_ID         각 노드를 구분하는 아이디.
+
+                    - 마스터 노드는 0, 데이터 노드는 음이 아닌 정수로 표시되며, IRIS 설치 시 설정 파일에 기재합니다.
+                    - 데이터 노드의 ID는 IRIS 설치 후, 해당 노드의 m6.config에 수동으로 등록합니다. 노드 추가를 위하여 해당 노드에서 NodeAdd 명령을 실행하면, 해당 노드 정보가 마스터 노드에 전달되어, 마스터 노드의 시스템 테이블에 자동으로 저장됩니다.
+    UPDATE_TIME     UPDATE_TIME은 해당 노드로부터 시스템 정보를 수신한 가장 최근의 시간을 의미합니다. 사용자가 ntop 명령어를 실행하면 10초마다 정보가 갱신되는데, 이 값이 변경되지 않는다면 해당 노드로 부터 시스템 정보가 수신되지 않는다는 것을 의미합니다. 만일, m6.config 파일의  [EHD]에 설정된 시간내에 시스템 정보가 수신되지 않을 경우 SYS_STATUS 는 WAIT_RETRY 로 변경됩니다.
+    IP              노드의 IP 주소
+    CPU             CPU 사용률(%)
+    LOADAVG         Load Average 값
+    MEM:P           해당 노드에서 동작하는 프로세스에서 점유한 메모리 사용율(%)
+    MEM:F           해당 노드의 램 파일 시스템, 즉 데이터를 저장하기 위하여 점유한 메모리 사용율(%)
+    DISK            디스크 사용량(%)
+    ==============  ===
+
+상기의 컬럼 중, LOADAVG, MEM:P, MEM:F, DISK 등의 리소스들은 각각 임계값이 설정되어 있으며, 현재 사용량의 임계값 초과 여부에 따라 노드의 상태가 변경됩니다. 각 임계값에 대한 설정 정보는 ${M6_HOME}/conf/m6.config 파일에서 [EHD_BUSY_CONDITION_UPPER] 섹션과 [EHD_BUSY_CONDITION_LOWER] 섹션을 참조하시기 바랍니다.
+
+
+노드 리소스 통계 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+위에서 설명한 것처럼, ntop 명령을 이용하여 현재 리소스 상태를 모니터하는 것도 중요하지만, 리소스 통계 정보를 이용하면 과거 특정 시점에 리소스가 얼마나 사용되었는지, 리소스 사용량이 늘어나고 있는지, 줄어들고 있는지를 분석하여 시스템 확장 계획 등에 반영할 수도 있습니다. 리소스 통계를 확인하기 위하여 사용하는 명령어는 다음과 같습니다.
+
+.. code::
+
+    iplus> .statistics  -h
+    Ret : +OK Success
+    
+    
+     HELP
+    ===========================================================================
+     statistics command help
+         ex ) .statistics [system | table | database] [option]
+         system : show system info statistics
+         table  : show table info statistics
+         database  : show database info statistics
+     ** option
+         -s, --stime   : set start time
+                         default) 00000000000000
+         -e, --etime   : set end time
+                         default) 99999999999999
+         -l, --slider  : set summary destination
+                         1  : 1 min statistics
+                         5  : 5 min statistics
+                         10 : 10 min statistics
+                         60 : 1 hour statistics
+                         24 : 1 day statistics
+                         default) 5
+         -m, --summary : set summary flag
+                         slave system or table info return aggregated result
+                         default) False
+         -a, --all     : set result type
+                         default result type is LAST
+                         if you want get statistics list, use this option
+                         default) False
+         -n, --node    : set node
+                         if you want several nodes info, use "," seperator
+                         default) ALL
+         -t, --table   : set table (only usable in table info)
+                         if you want several tables info, use "," seperator
+                         default) ALL
+    ===========================================================================
+    
+    30 row in set
+    
+    0.0859 sec
+
+위의 화면에서 알 수 있듯이, .statistics 명령어는 여러 가지 옵션을 함께 사용할 수 있습니다. 각 옵션에 대한 설명은 아래 표와 같습니다.
+
+.. table:: .statistics 명령의 옵션
+
+    ==================  ===
+    옵션                설명
+    -s or --stime       통계 산출의 시작 시간
+
+                        - 사용법: ``.statistics [system | table] --stime {yyyymmddHHMMSS}``
+                        - Default는 00000000000000이며, 이 경우 시작 시간이 저장된 데이터의 최초 시간으로 설정됩니다.
+    -e or --etime       통계 산출의 마지막 시간
+
+                        - 사용법: ``.statistics [system | table] --etime {yyyymmddHHMMSS}``
+                        - Default는 99999999999999이며, 이 경우 마지막 시간이 저장된 데이터의 마지막 시간으로 설정됩니다.
+    -l or --slider      통계 산출 주기를 지정합니다.
+
+                        - 사용법: ``.statistics [system | table] -l {num}``
+                        - 만일, -l을 10으로 설정하면 stime ~ etime까지 10분 간격으로 통계가 출력됩니다.
+                        - 통계 산출 주기는 1분, 5분, 10분, 60분, 24시간으로 설정할 수 있으며, default는 5로 설정됩니다.
+    -m or --summary     통계 산출 시, 노드별 통계가 아닌 전체 클러스터 기준으로 요약된 통계를 생성합니다. 만일, -m 옵션을 사용하지 않으면 각 노드별 통계가 생성됩니다.
+
+                        - 사용법: ``.statistics [system | table] –m``
+    -n or --node        특정 노드의 통계만 출력할 경우에 사용합니다.
+
+                        - 사용법: ``.statistics [system | table] -n {node_id}[,{node_id}]``
+    -t or --table       특정 테이블의 정보만 조회합니다.
+
+                        - 사용법: ``.statistics table {table_name}[,{table_name}]``
+    ==================  ===
+
+Statistics 명령어는 다음 표와 같이, 하드웨어 정보와 관련된 system 통계와 테이블 정보에 해당하는 table 통계로 구분하여 출력됩니다.
+
+.. table:: .statistics 통계 항목 - system
+    :widths: 20 40
+
+    ==================  ===
+    항목                설명
+    UPDATE_TIME         통계 정보가 수집된 시간
+    NODE_ID             노드의 아이디
+    NODE_IP             노드의 IP 주소
+    SYS_STATUS          노드의 상태 정보
+    ADM_STATUS          IRIS 관리자가 설정한 노드의 사용 유무 상태
+    HOST_NAME           호스트 이름
+    OS_NAME             운영체제 이름
+    OS_VERSION          운영체제 버전
+    OS_TYPE             메모리 주소 방식 (bit)
+    NET_NAME            네트워크 인터페이스 이름
+    NET_TYPE            네트워크 최대 전송 속도 (bps)
+    NET_MAC             네트워크 MAC 주소
+    NET_IN_PACKET       노드로 들어오는 패킷 수
+    NET_OUT_PACKET      노드에서 나가는 패킷 수
+    NET_IN_BYTE         노드로 들어오는 byte 수
+    NET_OUT_BYTE        노드에서 나가는 byte 수
+    CPU_CLOCK           CPU 클럭(Hz)
+    CPU_CORE            CPU 코어 개수
+    CPU_USAGE           CPU 사용률
+    CPU_L_AVG           노드 부하량
+    CPU_IOWAIT          IO 대기률 (%)
+    RAM_TOTAL           램 용량(byte)
+    RAM_USAGE_FILE      램디스크 사용량(byte)
+    RAM_USAGE_PROCESS   프로세스의 램 사용량(byte)
+    RAM_SWAP_TOTAL      스왑 총 용량(byte)
+    RAM_SWAP_USAGE      스왑 사용 용량(byte)
+    HDD_TOTAL           디스크 총 용량(byte)
+    HDD_USAGE           디스크 사용 용량(byte)
+    ==================  ===
+
+.. table:: .statistics 통계 항목 - table
+    :widths: 20 40
+
+    ==================  ===
+    항목                설명
+    UPDATE_TIME         통계 정보가 수집된 시간
+    NODE_ID             노드의 아이디
+    DATABASE_NAME       데이터베이스 명
+    TABLE_NAME          테이블 명
+    TABLE_SIZE          디스크에 존재하는 테이블의 크기
+    NUM_OF_FILE         디스크상에 존재하는 데이터 파일의 수
+    TABLE_SIZE_RAM      램 디스크에 존재하는 테이블의 크기
+    NUM_OF_FILE_RAM     램 디스크에 존재하는 데이터 파일의 수
+    ==================  ===
+
+
+아래는 system 통계와 table 통계가 출력된 화면 예시입니다.
+
+.. code::
+
+    iplus> .statistics system
+    Ret : +OK Success
+    
+    
+     UPDATE_TIME       NODE_ID    NODE_IP            SYS_STATUS    ADM_STATUS    HOST_NAME    OS_NAME    OS_VERSION    OS_TYPE    NET_NAME    NET_TYPE    NET_MAC              NET_IN_PACKET    NET_OUT_PACKET    NET_IN_BYTE    NET_OUT_BYTE    CPU_CLOCK    CPU_CORE    CPU_USAGE        CPU_L_AVG          CPU_IOWAIT         RAM_TOTAL      RAM_USAGE_FILE     RAM_USAGE_PROCESS    RAM_SWAP_TOTAL    RAM_SWAP_USAGE    HDD_TOTAL       HDD_USAGE
+    ========================================================================================================================================================================================================================================================================================================================================================================================================================================================
+     20180403175000    0          192.168.100.151    VALID         ENABLE        IRIS-M01     CentOS     6.9           64         eth1:0                  52:54:00:02:DC:C1    49               41                13141          5486            -1           8           4.49797932344    0.0419962121212    0.0118244592743    33806913536    0                  6.01791415816        34359734272       0                 67885760510     52.1408335755
+     20180403175000    1          192.168.100.155    VALID         ENABLE        IRIS-S01     CentOS     6.9           64         eth1        100         52:54:00:81:ED:7F    81               62                65905          8835            -1           8           6.07696425781    0.0339659090909    0.0925268411303    33806913536    0.0520941808187    16.6748391113        34359734272       0                 902472327165    3.43358545667
+     20180403175000    2          192.168.100.157    VALID         ENABLE        IRIS-S02     CentOS     6.9           64         eth0        100         52:54:00:C9:B3:48    35               23                4879           8635            -1           8           4.29612549326    0.0472821969697    0.0855415272128    33806790656    0.0658015019123    12.016796024         34359734272       0                 902472327166    2.83975621042
+     20180403175000    3          192.168.100.159    VALID         ENABLE        IRIS-S03     CentOS     6.9           64         eth1        100         52:54:00:9F:A5:24    39               28                6470           8688            -1           8           5.2026668275     0.0409412878788    0.0754073969154    33806913536    0.0515497746187    16.1511859378        34359734272       0                 902472327165    3.12763575728
+    ========================================================================================================================================================================================================================================================================================================================================================================================================================================================
+    
+    4 row in set
+    
+    0.0692 sec
+    
+    iplus> .statistics table
+    Ret : +OK Success
+    
+    
+     UPDATE_TIME       NODE_ID    DATABASE_NAME    TABLE_NAME               TABLE_SIZE     NUM_OF_FILE    TABLE_SIZE_RAM    NUM_OF_FILE_RAM
+    ==========================================================================================================================================
+     20180403175000    1          SYS              SYS_CPU_INFO             43466752       1061           32768             1
+     20180403175000    1          SYS              SYS_DISK_INFO            43466752       1061           32768             1
+     20180403175000    1          SYS              SYS_ERROR_LOG_INFO       113803264      570            147456            1
+     20180403175000    1          SYS              SYS_NETWORK_INFO         43466752       1061           32768             1
+     20180403175000    1          SYS              SYS_OS_INFO              43466752       1061           32768             1
+     20180403175000    1          SYS              SYS_RAM_INFO             43466752       1061           32768             1
+     20180403175000    1          SYS              SYS_SESSION_DATA         129974272      1538           0                 0
+     20180403175000    1          SYS              SYS_TABLE_SIZE_INFO      33652736       343            0                 0
+     20180403175000    1          TEST             LOCAL_TEST_TABLE         0              0              131072            4
+     20180403175000    1          WAS              WAS_QUERY_HIST           0              0              32768             1
+     20180403175000    1          WAS              WAS_LOG_QUERY_HIST       557056         17             98304             3
+     20180403175000    1          TEST             LOCAL_TEST_TABLEA        0              0              0                 0
+     20180403175000    1          TEST             LOCAL_TEST_TABLE_JDBC    0              0              0                 0
+     20180403175000    2          SYS              SYS_CPU_INFO             25165824       512            32768             1
+     20180403175000    2          SYS              SYS_DISK_INFO            25165824       512            32768             1
+     20180403175000    2          SYS              SYS_ERROR_LOG_INFO       2916352        58             32768             1
+     20180403175000    2          SYS              SYS_NETWORK_INFO         25165824       512            32768             1
+     20180403175000    2          SYS              SYS_OS_INFO              25165824       512            32768             1
+     20180403175000    2          SYS              SYS_RAM_INFO             25165824       512            32768             1
+     20180403175000    2          SYS              SYS_SESSION_DATA         287479621      1494           0                 0
+     20180403175000    2          SYS              SYS_TABLE_SIZE_INFO      33658197       343            0                 0
+     20180403175000    2          TEST             LOCAL_TEST_TABLE         0              0              65536             2
+     20180403175000    2          WAS              WAS_QUERY_HIST           0              0              0                 0
+     20180403175000    2          WAS              WAS_LOG_QUERY_HIST       792985         24             65536             2
+     20180403175000    2          TEST             LOCAL_TEST_TABLEA        0              0              0                 0
+     20180403175000    2          TEST             LOCAL_TEST_TABLE_JDBC    0              0              0                 0
+     20180403175000    3          SYS              SYS_CPU_INFO             26001408       529            0                 0
+     20180403175000    3          SYS              SYS_DISK_INFO            26001408       529            0                 0
+     20180403175000    3          SYS              SYS_ERROR_LOG_INFO       2572288        51             0                 0
+     20180403175000    3          SYS              SYS_NETWORK_INFO         26001408       529            0                 0
+     20180403175000    3          SYS              SYS_OS_INFO              26001408       529            0                 0
+     20180403175000    3          SYS              SYS_RAM_INFO             26001408       529            0                 0
+     20180403175000    3          SYS              SYS_SESSION_DATA         121852574      1492           0                 0
+     20180403175000    3          SYS              SYS_TABLE_SIZE_INFO      33624883       343            0                 0
+     20180403175000    3          TEST             LOCAL_TEST_TABLE         0              0              196608            6
+     20180403175000    3          WAS              WAS_QUERY_HIST           0              0              32768             1
+     20180403175000    3          WAS              WAS_LOG_QUERY_HIST       887466         27             32768             1
+     20180403175000    3          TEST             LOCAL_TEST_TABLEA        0              0              0                 0
+     20180403175000    3          TEST             LOCAL_TEST_TABLE_JDBC    0              0              0                 0
+    ==========================================================================================================================================
+    
+    39 row in set
+    
+    0.2462 sec
+
+
+로그 보기
+-----------------------------------------
+IRIS에서 관리하는 로그는 시스템 운용 중에 일반적으로 발생하는 동작 로그와 시스템의 상태 변경에 따라 발생하는 이벤트 로그로 구분됩니다.
+
+동작 로그 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+동작 로그는 IRIS 시스템을 운용 중에 일반적인 상황에서 지속적으로 발생하는 로그입니다. 동작 로그는 용도에 따라 다음 표와 같이 구분됩니다.
+
+.. table:: 동작 로그
+    :widths: 10 10 10 70
+
+    ==============  ===========  ==================  ===
+    로그명          생성 노드    파일 포맷           설명
+    m6              모든 노드    | m6.log            아래의 SM, mps, BIM, EHD 등 주요 프로세스를 제외한 나머지 프로세스, 즉 DLD, NSD, Listener 등의 동작 중 발생하는 로그를 기록합니다.
+                                 | m6.log.xxx      
+    SM              모든 노드    | SM.log            시스템 모니터링 관련 로그와 heartbeat에 대한 로그가 기록됩니다.
+                                 | SM.log.xxx
+    mps             모든 노드    | mps.log           IRIS 프로세스들의 상태를 관리하는 관리 프로세스인 mps의 동작 중 발생하는 로그를 기록합니다.
+                                 | mps.log.xxx 
+    BIM             마스터 노드  | BIM.log           삭제될 파일의 리스트를 만들거나, 이중화된 데이터 중 하나의 파일이 손상되어 해당 파일의 리스트를 만드는 역할을 담당하는 BIM(Backend Integrity Manager)의 관련 동작에 대한 로그가 저장됩니다.
+                                 | BIM.log.xxx
+    EHD             마스터 노드  | EHD.log           ntop 명령을 실행하여 출력되는 정보를 저장합니다. Ntop 명령은 사용자에 의하여 실행되기도 하지만, 시스템에서 주기적(10초 주기)으로 실행하여 그 결과를 EHD 로그에 기록합니다.
+                                 | EHD.log.xxx
+    ==============  ===========  ==================  ===
+
+아래에 기술한 내용은 위의 표에 나열된 동작 로그를 확인하는 방법에 대하여 m6 로그의 예를 들어 기술하고 있습니다. 동작 로그의 파일 포맷은 로그 파일이 일정한 크기를 초과하면 m6.log.1, m6.log.2, …, m6.log.500 등 순차적으로 기록되며, 가장 최근에 발생한 로그는 m6.log에 기록됩니다.
+동작 로그는 상기 표의 파일 포맷으로 아래 디렉토리에 기록됩니다. 
+
+``~/IRIS/log/``
+
+IRIS의 동작 로그 중, m6 로그에는 IRIS의 대부분의 오류 혹은 동작 여부를 판단할 수 있는 정보가 기록됩니다. 로그의 보관 주기는 아래 파일에서 정의합니다.
+
+``~/IRIS/conf/common/m6.config``
+
+상기와 같이 mps.conf 파일을 오픈하여, 파일의 내용 중에 아래 항목을 수정하여 보관 주기를 정의합니다.
+
+.. code::
+
+    [LOG]
+    loglevel = INFO
+    m_port = 5999
+    s_port = 6999
+    pr_file_count = 500
+    pr_max_bytes = 10000000
+    pl_file_count = 500
+    pl_max_bytes = 10000000
+    filesystem_file_count = 500
+    filesystem_max_bytes = 10000000
+    m6_file_count = 500
+    m6_max_bytes = 10000000
+
+상기의 예에서는 하나의 로그 파일에 10,000,000 바이트의 로그를 기록하며, 최대 500개의 로그 파일을 생성하도록 정의하고 있습니다. 
+
+이벤트로그 보기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IRIS는 오류, 리소스의 과다 사용, 시스템의 고장 등으로 인하여 노드의 상태가 변화할 경우, 해당 내용이 기록된 별도의 이벤트 로그를 생성합니다. 본 매뉴얼에서는 이러한 이벤트 로그를 Notification으로 정의합니다. 이벤트 로그는 노드의 상태 변화의 정도에 따라 아래 표와 같이 별도의 파일로 구분됩니다. 노드의 상태 변화에 대한 설명은 “표 4 1. 노드의 시스템 상태“를 참조하시기 바랍니다.
+
+.. table:: 이벤트 로그
+    :widths: 10 10 10 70
+
+    ==========  ==============  ======================  ===
+    이벤트명    로그 생성 노드  파일 포맷               설명
+    INFO        마스터 노드     [DATE]_[NODE_IP].INFO   IRIS 관리자가 NodeEnable, NodeDisable 명령으로 노드의 상태를 변경하는 경우에 INFO 로그가 생성됩니다.
+    WARN        마스터 노드     [DATE]_[NODE_IP].WARN   노드의 리소스 상태 변화에 대하여 IRIS 관리자에게 경고하기 위하여, m6.config 파일에 [EHD_WARN_CONDITION]에 각 리소스별 경고를 위한 임계값을 설정할 수 있습니다. 만일, 특정 리소스가 해당 임계값을 초과하면 WARN 로그가 생성됩니다.
+    BUSY        마스터 노드     [DATE]_[NODE_IP].BUSY   노드의 리소스 상태가 m6.config 파일에 설정한  [EHD_BUSY_CONDITION_UPPER] 혹은  [EHD_BUSY_CONDITION_LOWER] 을 초과하는 경우에 BUSY 로그가 생성됩니다.
+    ERROR       마스터 노드     [DATE]_[NODE_IP].ERROR  데이터 노드에서 쿼리를 분석하고 쿼리 결과를 취합하는 UDM이 동작하지 않을 경우, ERROR 로그가 생성됩니다.
+    FATA        마스터 노드     [DATE]_[NODE_IP].FATAL  디스크에 고장이 발생할 경우, FATAL 로그가 생성됩니다.
+    RETRY       마스터 노드     [DATE]_[NODE_IP].RETRY  | HEARTBEAT TIME OUT.
+                                                        | 시스템 정보가 수집이 안될 경우, RETRY 로그가 생성됩니다.
+    Recover     데이터 노드     Recover_log_[DATE]      IRIS 관리자가 Recover 명령을 사용하여 데이터를 복구할 경우에 Recover 로그가 생성됩니다.
+    ==========  ==============  ======================  ===
+
+이벤트 로그는 아래 디렉토리에 저장되며, Recover 로그를 제외하고는 ``[발생시간]_[발생 노드의 IP 주소].[이벤트명]`` 형태의 파일명으로 생성됩니다.
+
+``~/IRIS/proc/noti``
+
+이벤트 로그에 기록되는 내용은 다음과 같습니다.
+
+.. code::
+
+    ## Reported by ## 
+    [LOCATION]              - 해당 로그를 생성한 프로세스 명
+    ## Scope ## 
+    [SCOPE]                 - 해당 이벤트가 영향을 미치는 범위
+    ## Event ## 
+    [INFO]                  - 해당 로그를 상세 정보
+
+아래는 ``20151130213609_10.7.25.59.WARN`` 이라는 WARN 로그 파일의 내용을 출력한 예입니다.
+
+.. code::
+
+    ## Reported by ## 
+    EHD
+    ## Scope ## 
+    NODE
+    ## Event ## 
+    CPU.IOWAIT(19.1692508569) > 10.0
+
+HealthCheck 실행하기
+-----------------------------------------
+IRIS는 IRIS 관리자가 IRIS 시스템이 정상적으로 동작하고 있는지 각 노드의 전반적인 상태와 테이블의 동작 상태를 주기적으로 점검할 수 있도록 아래의 명령어를 제공합니다. 
+
+.. code::
+
+    [iris@master ~]$ ~/IRIS/bin/Admin/HealthCheck
+
+상기의 HealthCheck 명령어는 마스터 노드에서, 리눅스 계정을 보유한 IRIS 관리자만 실행 가능합니다. HealthCheck 명령을 실행하면, 아래 표에 나열된 항목들을 점검하여 그 결과를 출력합니다.
+
+- 마스터 노드의 동작 상태 점검
+    .. table:: 
+        :widths: 20 80
+    
+        ========================  ===
+        점검 항목                 설명
+        | 환경 변수(env)          | IRIS의 환경변수인 $M6_HOME의 설정 유무를 확인합니다.
+        | 마스터 이중화(HA)       | 마스터 노드의 이중화 여부를 확인합니다.
+        | 최대 파일 오픈 개수     | IRIS 설치 시 설정된 OpenFileUlimit 값(리눅스 환경 변수이며, Ulimit –a 명령어를 사용하여 설정)이 변경되었는지 확인합니다.
+        | (OpenFileUlimit)        | 기 설정된 값과 다른 경우, 에러로 표기됩니다.
+        | 최대 프로세스 개수      | IRIS 설치 시 설정된 MaxProcessUlimit 값(리눅스 환경 변수이며, Ulimit –a 명령어를 사용하여 설정)이 변경되었는지 확인합니다.
+        | (MaxProcessUlimit)      | 기 설정된 값과 다른 경우, 에러로 표기됩니다.
+        | 전체 노드 상태          | 노드의 상태 VALID 인지 아닌지 여부를 확인합니다.
+        | (nodeStatus)
+        | 프로세스 상태 체크      | 해당 노드의 프로세스 상태가 OK인지 아닌지 여부를 확인합니다.
+        | (mpsCheck)              | mps에서 관리하는 여러가지 프로세스 중, 하나라도 ERR이면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        | 로드 에버리지 체크      | 해당 노드의 로드 에버리지 상태를 확인합니다.
+        | (printLoad)             | 만일, 로드 에러리지의 값이 CPU 코어 개수 * 2보다 높으면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        | 램 파일 시스템 체크     | 해당 노드의 램디스크 설정 여부를 확인합니다.
+        | (ramfsCheck)            | 만일, ramdisk가 생성되어 있지 않거나, 해당 ramdisk가 리눅스의 iris 계정으로 접근이 가능한 권한으로 설정되어 있지 않다면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        | 디스크 체크             | 해당 노드의 디스크가 정상적으로 설정되어 있는지 여부를 확인합니다.
+        | (diskCheck)             | 만일, disk가 정상적으로 설정되어 있지 않다면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        ========================  ===
+
+- 데이터 노드의 동작 상태 점검
+    .. table::
+        :widths: 20 80
+
+        ========================  ===
+        점검 항목                 설명
+        | 환경 변수(env)          | IRIS의 환경변수인 $M6_HOME의 설정 유무를 확인합니다.
+        | 최대 파일 오픈 개수     | IRIS 설치 시 설정된 OpenFileUlimit 값(리눅스 환경 변수이며, Ulimit –a 명령어를 사용하여 설정)이 변경되었는지 확인합니다.
+        | (OpenFileUlimit)        | 기 설정된 값과 다른 경우, 에러로 표기됩니다.
+        | 최대 프로세스 개수      | IRIS 설치 시 설정된 MaxProcessUlimit 값(리눅스 환경 변수이며, Ulimit –a 명령어를 사용하여 설정)이 변경되었는지 확인합니다.
+        | (MaxProcessUlimit)      | 기 설정된 값과 다른 경우, 에러로 표기됩니다. 
+        | 프로세스 상태 체크      | 해당 노드의 프로세스 상태가 OK인지 아닌지 여부를 확인합니다. mps에서 관리하는 여러가지 프로세스 중, 하나라도 ERR이면 ERR로 표시됩니다.
+        | (mpsCheck)              | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        | 로드 에버리지 체크      | 해당 노드의 로드 에버리지 상태를 확인합니다.
+        | (printLoad)             | 만일, 로드 에러리지의 값이 CPU 코어 개수 * 2보다 높으면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        | 램 파일 시스템 체크     | 해당 노드의 램디스크 설정 여부를 확인합니다.
+        | (ramfsCheck)            | 만일, ramdisk가 생성되어 있지 않거나, 해당 ramdisk가 리눅스의 iris 계정으로 접근이 가능한 권한으로 설정되어 있지 않다면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+	    | 디스크 체크             | 해당 노드의 디스크가 정상적으로 설정되어 있는지 여부를 확인합니다.
+        | (diskCheck)             | 만일, slave_disk가 정상적으로 설정되어 있지 않다면 ERR로 표시됩니다.
+                                  | 만일, ERR로 표시되는 경우, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+        ========================  ===
+
+- 테이블의 서비스 상태 점검(글로벌 테이블 및 로컬 테이블)	
+    .. table::
+        :widths: 20 80
+
+        =================== ===
+        점검 항목           설명
+        테이블 생성         테이블이 정상적으로 생성되는지 확인합니다.
+        인덱스 생성         인덱스가 정상적으로 생성되는지 확인합니다.
+        데이터 삽입         데이터가 정상적으로 삽입되는지 확인합니다.
+        데이터 갱신         데이터가 정상적으로 갱신되는지 확인합니다.
+        데이터 삭제         데이터가 정상적으로 삭제되는지 확인합니다.
+        데이터의 벌크 입력  대량의 데이터가 정상적으로 입력되는지 확인합니다.
+        데이터 조회         테이블에 저장된 데이터가 정상적으로 조회되는지 확인합니다.
+        인덱스 삭제         인덱스가 정상적으로 삭제되는지 확인합니다.
+        테이블 삭제         테이블이 정상적으로 삭제되는지 확인합니다.
+        =================== ===
+
+아래는 HealthCheck 명령의 도움말을 출력하는 화면입니다.
+
+.. code::
+
+    [iris@master ~]$ ~/IRIS/bin/Admin/HealthCheck -h
+    Welcome IRIS health check program
+    Usage :
+      ~/IRIS/bin/Admin/HealthCheck [option]
+      option :
+         -h, --help : show this page
+         --log      : print log file
+         --simple   : change print format to simple print mode
+         --service  : service check option
+                      it makes some overhead to IRIS
+                      do not use this option at service time
+    How to configuration?
+      edit /home/iris2/IRIS/conf/status.config 
+
+상기의 화면에서와 같이, HealthCheck 명령을 실행할 때는 다음과 같은 옵션을 사용할 수 있습니다.
+
+**Log Option (--log)**
+
+--log 옵션과 함께 HealthCheck를 실행하면, IRIS 관리자가 설정한 특정 문자열을 기존 로그 파일에서 검색하여 해당 내용을 출력합니다. --log 옵션의 세부 항목은 아래 파일에서 설정합니다.
+
+``~/IRIS/conf/status.config``
+
+상기 파일에는 다음과 같은 항목들이 설정되어 있습니다. IRIS 관리자는 아래 항목을 수정하여 HealthCheck 실행 결과를 변경할 수 있습니다.
+
+.. code::
+
+    [LogDefault]
+    filterlist = Exception,ERR
+    logbefore = 10
+    logafter = 10
+    
+    [LogMaster]
+    loglist = EHD.log,m6.log,SM.log
+    
+    [LogSlave]
+    loglist = SM.log,m6.log
+
+위의 status.config 파일의 항목에 대한 설명은 다음과 같습니다.
+
+- filterlist
+    로그 파일에서 필터링할 문자열을 지정합니다. 상기에서는 Exception과 ERR을 지정했으므로, 로그 파일에서 해당 문자열을 검색하여, 해당 문자열이 포함된 행을 출력합니다. 
+- logbefore/logafter
+    상기의 filterlist에 지정한 문자열이 검색되는 행의 앞과 뒤로 몇 행을 출력할 것인지 지정합니다. 상기의 예에서는 10으로 지정되어 있으므로, Exception 혹은 ERR가 포함된 행의 앞 10행과 뒤 10행을 함께 출력합니다.
+- loglist
+    마스터 노드(LogMaster)와 데이터 노드(LogSlave)에서 상기의 filterlist에서 지정한 문자열을 검색할 로그를 지정합니다.
+
+**Service Option (--service)**
+
+HealthCheck를 실행할 때 --service option을 추가하면, 상기 표에 기술한 IRIS의 노드의 동작 상태와 테이블의 서비스 상태를 점검한 항목별 결과를 모두 확인할 수 있습니다.
+
+.. code::
+
+    [iris@master ~]$ ~/IRIS/bin/Admin/HealthCheck --service
+    - Master Node Checking Start
+     - master node check result : ERR
+                               env ---------- OK
+                                HA ---------- not working
+                               EHD ---------- OK
+                    OpenFileUlimit ---------- OK
+                  MaxProcessUlimit ---------- OK
+                        nodeStatus ---------- OK
+                          mpsCheck ---------- OK
+                         printLoad ---------- OK
+                        ramfsCheck ---------- OK
+                         diskCheck ---------- OK
+    
+    - Slave Node 1 Checking Start
+     - slave node check result : OK
+                               env ---------- OK
+                    OpenFileUlimit ---------- OK
+                  MaxProcessUlimit ---------- OK
+                          mpsCheck ---------- OK
+                         printLoad ---------- OK
+                        ramfsCheck ---------- OK
+                         diskCheck ---------- OK
+    
+    - Slave Node 2 Checking Start
+     - slave node check result : OK
+                               env ---------- OK
+                    OpenFileUlimit ---------- OK
+                  MaxProcessUlimit ---------- OK
+                          mpsCheck ---------- OK
+                         printLoad ---------- OK
+                        ramfsCheck ---------- OK
+                         diskCheck ---------- OK
+    
+    - Slave Node 3 Checking Start
+     - slave node check result : OK
+                               env ---------- OK
+                    OpenFileUlimit ---------- OK
+                  MaxProcessUlimit ---------- OK
+                          mpsCheck ---------- OK
+                         printLoad ---------- OK
+                        ramfsCheck ---------- OK
+                         diskCheck ---------- OK
+
+위의 화면은 --service 옵션을 사용하여 HealthCheck 명령을 실행한 결과를 보여줍니다. 위의 화면에서, “master node check result “에 ERR로 표시된 것을 확인할 수 있습니다. 이는 HA, 즉 마스터 노드의 이중화가 적용되지 않았기 때문에, 다른 점검 항목이 정상이라도 해당 노드의 상태는 ERR로 표시된 것입니다.
+위의 예시 화면에서와 같이, --service 옵션으로 HealthCheck 명령을 실행하면, 실제로 데이터 파일을 삭제하여 정상적으로 동작하는지 확인합니다. 이 경우, 실제 데이터가 삭제될 때까지 일정한 시간이 소요되므로 --service 옵션을 연속으로 사용할 경우, 에러가 발생할 수 있습니다. 따라서, 일단 --service 옵션을 실행한 후에 재 실행하려면, 최소 10분 뒤에 재실행할 것으로 권장합니다.
+
+**Simple Option (--simple)**
+
+--simple 옵션과 함께 HealthCheck 명령을 실행하면 각 노드별 최종 결과와 테이블의 서비스 점검 결과만 출력됩니다. 아래는 --simple 옵션을 사용한 HealthCheck 실행 결과입니다.
+
+.. code::
+
+    [iris2@IRIS-M01 ~]$ ~/IRIS//bin/Admin/HealthCheck --simple
+    - Master Node Checking Start
+     - master node check result : ERR
+    
+    - Slave Node 1 Checking Start
+     - slave node check result : OK
+    
+    - Slave Node 2 Checking Start
+     - slave node check result : OK
+    
+    - Slave Node 3 Checking Start
+     - slave node check result : OK
+

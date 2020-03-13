@@ -1,0 +1,495 @@
+IRIS 운영 명령
+==========================================
+
+IRIS는 IRIS 시스템 관리자가 원활하게 업무를 수행할 수 있도록 다양한 관리 툴을 제공하고 있습니다. 아래 표는 IRIS에서 제공하는 관리 툴은 아래 표와 같이 분류할 수 있습니다.
+
+.. table:: IRIS 관리 툴
+    :widths: 20, 80
+
+    =================  ===
+    관리 툴 유형       설명
+    =================  ===
+    운영 명령          IRIS를 운영하기 위하여 IRIS 관리자가 기본적으로 사용하는 명령어로서, IRIS를 기동하거나 종료, 노드의 추가 혹은 상태 변경, 노드의 제거를 위한 명령어가 포함됩니다.
+    iplus              원격의 클라이언트에서 CLI(Command Line Interface)를 통하여 IRIS에 접속하여 IRIS를 제어하고 관리하거나 데이터를 조회하는 명령을 실행할 수 있는 툴입니다.
+    모니터링 명령      IRIS 시스템의 상태를 파악하기 위하여 필요한 ntop 명령, 로그, HealthCheck 등 다양한 기능이 제공됩니다.
+    =================  ===
+
+
+본 장에서는 상기의 IRIS 관리 툴 중 운영 명령에 대하여 기술합니다.
+
+
+IRIS 사용자 구분
+-----------------------------------------
+IRIS에 접속할 수 있는 사용자는 접속 권한에 따라 다음 표와 같이 구분합니다.
+
+.. table:: IRIS 사용자 구분
+    :widths: 20, 80
+
+    =================  ===
+    유형               설명
+    =================  ===
+    IRIS 관리지        - IRIS의 운영을 포함하여 모든 권한을 부여받은 사용자 입니다.
+                       - IRIS 운영체제(리눅스 OS)에 iris 계정으로 로그인하여 IRIS에 접속합니다.
+                       - 만일 IRIS 관리자가 iplus를 사용하고자 할 경우, iplus에 root 계정으로 로그인합니다.
+    사용자             - IRIS로 부터 데이터 조회 등 제한적인 사용이 허용된 일반 사용자입니다.
+                       - IRIS client에서 제공하는 iplus를 통하여 혹은 API를 통하여 IRIS에 접근이 가능합니다.
+    =================  ===
+
+IRIS 시작하기(Start-up)
+-----------------------------------------
+IRIS와 관련된 모든 설치작업이 완료된 후, IRIS를 시작하려면 IRIS-Startup 명령어를 사용합니다. 
+
+.. code::
+
+    $ ~/IRIS/bin/Admin/IRIS-Startup
+
+이 시작 명령어는 IRIS를 시작하기 위하여 필요한 설정 확인 및 관련 프로세스 들을 자동으로 실행하는 명령어입니다.
+IRIS 시작 명령어는 마스터 노드에서 먼저 실행한 후, 각 데이터 노드에서 실행합니다.
+여기서, 데이터 노드가 여러 대인 경우, 데이터 노드에서의 시작 명령어 실행 순서는 정해져 있지 않으며, 다수의 데이터 노드에서 시작 명령을 동시에 실행할 수 있습니다.
+만일, IRIS 시작 명령어를 실행하는 동안 fail이 발생하거나 예시 화면과 다른 결과가 출력되면, IRIS의 설치 과정에서 환경 설정 등에 오류가 있었는지 확인할 필요가 있습니다.
+따라서, “IRIS Installation Guide”에 따라 환경 설정 항목을 다시 확인하시기 바랍니다.
+
+
+마스터 노드에서 IRIS 시작하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+마스터 노드에서 시작 명령어를 실행하면 아래 절차가 자동으로 실행됩니다.
+
+- Step 1. 실행 환경 확인: IRIS의 실행 환경인 리눅스 시스템에서 설정된 프로세스 자원 한도(ulimit)를 확인 또는 갱신합니다.
+- Step 2. 기본 설정 확인: 노드의 타입, 사용 포트 등 IRIS 환경 설정을 확인합니다.
+- Step 3. 기본 프로세스 실행: IRIS의 기본 프로세스로서 동작하는 mps(mobigen process status) 를 실행합니다.
+- Step 4. IRIS 프로세스 실행: mps에 의하여 구동되는 IRIS 프로세스들을 실행합니다.
+
+아래는 마스터 노드에서 IRIS-Startup 명령을 실행하여 상기의 각 절차가 진행됨에 따라 화면에 출력되는 내용입니다.
+IRIS 관리자는 IRIS 시작 절차가 진행되는 중에 필요로 하는 요구에 응답하기만 하면 됩니다.
+
+.. code::
+
+    [iris@master ~]$ ~/IRIS/bin/Admin/IRIS-Startup
+
+    ! NODE TYPE is MASTER
+    ! COMMAND TYPE is START
+    ! MPS DAEMON PORT is 5998
+    ! RUN RECOVER is True
+
+    Do you want continue? (y/N) : y 
+    !!! IRIS MASTER node start soon !!!
+
+     - mps daemon check
+     - mps daemon is not running.
+     - mps daemon start : True
+
+     - hugepage check
+
+    [sudo] password for iris:   
+
+     - update hugepage : OK
+
+    - run all IRIS daemon.
+
+    - Please check IRIS daemon. 
+
+    ------------------------------------------------------------------------------------------------------------------
+    ABN   MID    NAME         DESC                      GROUP       MODE    PID    CMD    STA         TIME
+    ------------------------------------------------------------------------------------------------------------------
+    <begin>
+    OK | 17000 | NSD        | node selector           | Master    | NML |  2558 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17050 | LISTENER   | listener                | Master    | NML |  2562 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17200 | GTAD       | global table            | Master    | NML |  2564 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17210 | DLD        | data locator            | Master    | NML |  2566 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17432 | PGD        | priviledge grant        | Master    | NML |  2568 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17478 | EHD        | environment             | Master    | NML |  2537 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17500 | BIM        | backend integrity       | Master    | NML |  2550 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17700 | PED        | procedure executor      | Master    | NML |  2570 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17800 | MSD        | manager sampling daemon | Master    | NML |  2556 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17910 | DS         | data server             | Master    | NML |  2554 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 17996 | SMD        | system monitor          | Master    | NML |  2539 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 97800 | CMDD       | command daemon          | Common    | NML |  2572 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 97902 | SM         | status monitor          | Common    | NML |  2574 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 97995 | DTD        | data transfer           | Common    | NML |  2560 |  ACT |  ACT | 2019-01-02 00:41:48
+    OK | 97999 | LogServer  | log server              | Common    | NML |  2576 |  ACT |  ACT | 2019-01-02 00:41:48
+    <end>
+
+데이터 노드에서 IRIS 시작하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터 노드에서 IRIS의 시작 명령어를 실행하면 아래 절차가 자동으로 실행됩니다.
+현재 버전에서는 IRIS 관리자가 각 데이터 노드에 로그인하여 IRIS 시작 절차를 반복 실행하여야 합니다.
+
+- Step 1. 실행 환경 확인: IRIS의 실행 환경인 리눅스 시스템에서 설정된 프로세스 자원 한도(ulimit)를 확인 또는 갱신합니다.
+- Step 2. 기본 설정 확인: 노드의 타입, 사용 포트 등 IRIS 환경 설정을 확인합니다.
+- Step 3. ramfs 마운트 확인: RAM 디스크가 마운트 되어있는지 여부를 확인한 후, 마운트 되어 있지 않은 경우, 마운트를 진행합니다. 
+- Step 4. 데이터 디렉토리 권한 확인: 데이터 디렉토리(IRIS/data/data_disk)에 디스크가 링크되어 있는지 여부를 확인합니다.
+- Step 5. 기본 프로세스 실행: IRIS의 기본 프로세스로서 동작하는 mps 를 실행합니다.
+- Step 6. 마스터 노드 데이터 동기화: 마스터 노드와 데이터 노드간에 SYSTEM 테이블 및  GLOBAL 테이블을 동기화합니다. 
+- Step 7. 복구 프로세스 실행: 해당 데이터 노드에 저장된 데이터의 위치 정보를 복구(SlaveRecover)하는 프로세스가 자동으로 실행됩니다. 본 절차는 정상 동작중인 노드가 비정상적인 원인으로 갑자기 종료되었을 때, 메모리에 적재되어 있던 데이터의 위치 정보를 복구하기 위하여 주로 실행됩니다.
+- Step 8. IRIS 프로세스 실행: mps에 의하여 구동되는 IRIS 프로세스들을 실행합니다.
+
+아래는 각 데이터 노드에서 IRIS-Startup 명령을 실행하여 상기의 각 절차가 진행됨에 따라 화면에 출력되는 내용입니다. 
+IRIS 관리자는 IRIS 시작 절차가 진행되는 중에 필요로 하는 요구에 응답하기만 하면 됩니다.
+
+
+.. code::
+
+    [iris@slave#n ~]$ ~/IRIS/bin/Admin/IRIS-Startup
+
+    ! NODE TYPE is SLAVE
+    ! COMMAND TYPE is START
+    ! MPS DAEMON PORT is 6998
+    ! RUN RECOVER is True
+    Do you want continue? (y/N) : y
+    !!! IRIS SLAVE node start soon !!!
+    
+    
+     - mps daemon check
+       - mps daemon is not running.
+       - mps daemon start : True
+    
+    
+     - hugepage check
+    [sudo] password for iris:
+       - update hugepage : Failed.
+    
+    
+     - ramfs check
+       - ramfs check : /home/iris/IRIS/data/master
+          - directory check : OK
+          - ramfs is not mounted.
+          - ramfs mount : OK
+          - ramfs wrong owner.
+          - owner change : OK
+       - ramfs check : /home/iris/IRIS/data/slave
+          - directory check : OK
+          - ramfs is not mounted.
+          - ramfs mount : OK
+          - ramfs wrong owner.
+          - owner change : OK
+    
+    
+    
+    
+    [SYSTEM TABLE SYNC]
+     :SYS_NODE_INFO(+OK)
+     :SYS_TABLE_INFO(+OK)
+     :SYS_INDEX_INFO(+OK)
+     :SYS_PROC_INFO(+OK)
+     :SYS_SCHED_INFO(+OK)
+     :SYS_HELP(+OK)
+     :SYS_COLUMN_FILTER(+OK)
+     :SYS_USERS(+OK)
+     :SYS_DENY_USERS(+OK)
+     :SYS_TABLE_PRIV(+OK)
+     :SYS_PROC_PRIV(+OK)
+     :SYS_PRODUCT_VERSION(+OK)
+     :SYS_USER_STORAGE(+OK)
+     :SYS_SAMPLING_INFO(+OK)
+     :SYS_DB_INFO(+OK)
+     :SYS_DB_PRIV(+OK)
+     :SYS_HASHMOD_INFO(+OK)
+     :SYS_VIEW_INFO(+OK)
+     - recover start
+    [ALL Mode]
+     -TH Count  : 2
+     -Modify DLD: False
+     -Rebuild : False
+     -LogFile : /home/iris/IRIS/log/Recover_20190102004150.log
+    
+    ================================================================================
+    | LOCAL Mode Start
+    ================================================================================
+    [Table List] (9)
+     :SYS_CPU_INFO(45)
+     :SYS_DISK_INFO(45)
+     :SYS_ERROR_LOG_INFO(13)
+     :SYS_NETWORK_INFO(45)
+     :SYS_OS_INFO(43)
+     :SYS_RAM_INFO(45)
+     :SYS_SESSION_DATA(37)
+     :SYS_SSD_INFO(22)
+     :SYS_TABLE_SIZE_INFO(23)
+    
+    5 second later start...
+    
+    [Result]
+    [1/318] 0.004s, [Exists], SYS_CPU_INFO 1 20181220000000 1 HDD part00
+    [2/318] 0.008s, [Exists], SYS_CPU_INFO 1 20181220010000 1 HDD part00
+    [3/318] 0.005s, [Exists], SYS_CPU_INFO 1 20181220020000 1 HDD part00
+    .
+    .
+    .
+    [321/318] 0.003s, [Exists], SYS_TABLE_SIZE_INFO 1 20181225230000 1 HDD part00
+    [320/318] 0.008s, [Exists], SYS_TABLE_SIZE_INFO 1 20181221090000 1 HDD part00
+    [322/318] 0.007s, [Exists], SYS_TABLE_SIZE_INFO 1 20181226000000 1 HDD part00
+    
+    [Fail List]
+    
+    [Summary]
+    Totol Backend count: 318
+     -Create count: 0
+     -Exists count: 322
+     -Recover Fail: 0
+    
+    ================================================================================
+    | SYNC Mode Start
+    ================================================================================
+    [Table List] (13)
+     :SYS_CPU_INFO(47)
+     :SYS_DISK_INFO(47)
+     :SYS_ERROR_LOG_INFO(15)
+     :SYS_NETWORK_INFO(47)
+     :SYS_OS_INFO(44)
+     :SYS_RAM_INFO(47)
+     :SYS_SESSION_DATA(37)
+     :SYS_SSD_INFO(24)
+     :SYS_TABLE_SIZE_INFO(23)
+     :T29(0)
+     :T74(0)
+     :T84(0)
+     :T89(0)
+    
+    5 second later start...
+    
+    [Result]
+    [1/331] 0.000s, OK[EXISTS:C,YES,-] SYS_CPU_INFO 1 20181221070000 1
+    [2/331] 0.000s, OK[EXISTS:C,YES,-] SYS_CPU_INFO 0 20181221030000 1
+    [3/331] 0.000s, OK[EXISTS:C,YES,-] SYS_CPU_INFO 1 20181220020000 1
+    .
+    .
+    .
+    [329/331] 0.000s, OK[EXISTS:C,YES,-] SYS_TABLE_SIZE_INFO 1 20181221020000 1
+    [330/331] 0.000s, OK[EXISTS:C,YES,-] SYS_TABLE_SIZE_INFO 1 20181220060000 1
+    [331/331] 0.000s, OK[EXISTS:C,YES,-] SYS_TABLE_SIZE_INFO 1 20181220010000 1
+    
+    [Fail List]
+    
+    [Summary]
+    Totol Backend count: 331
+    Not Recover: 331
+     - Exists: 324
+     - Ignore: 7
+    Recover Success: 0
+     -SYNC: 0
+     -Add INFO: 0(C), 0(D)
+     -Del INFO: 0
+    Recover Fail: 0
+     - run all IRIS daemon.
+    
+    
+     - please check IRIS daemon.
+    ------------------------------------------------------------------------------------------------------------------
+    ABN   MID    NAME         DESC                      GROUP       MODE    PID    CMD    STA         TIME
+    ------------------------------------------------------------------------------------------------------------------
+    <begin>
+    OK | 27100 | UDM        | userquery dist.         | Slave     | NML |  2792 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27110 | DSD        | data selector           | Slave     | NML |  2772 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27120 | DCD        | data changer            | Slave     | NML |  2802 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27610 | LSM        | local session           | Slave     | NML |  2810 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27750 | RMD        | resource manager daemon | Slave     | NML |  2790 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27760 | SCD        | spark connector daemon  | Slave     | NML |  2796 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27770 | WSD        | worker sampling daemon  | Slave     | NML |  2794 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27771 | ASD        | activate sampling daemon | Slave     | NML |  2808 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27903 | PL_RAM     | partition location ram  | Slave     | NML |  2800 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 27905 | PR         | partition remover       | Slave     | NML |  2806 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 97800 | CMDD       | command daemon          | Common    | NML |  2804 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 97902 | SM         | status monitor          | Common    | NML |  2798 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 97995 | DTD        | data transfer           | Common    | NML |  2788 |  ACT |  ACT | 2019-01-02 00:42:09
+    OK | 97999 | LogServer  | log server              | Common    | NML |  2786 |  ACT |  ACT | 2019-01-02 00:42:09
+    <end>
+
+
+
+IRIS 종료하기(Shutdown)
+-----------------------------------------
+현재 운영중인 IRIS에 패치를 적용하거나 시스템을 점검하여야 할 경우, 현재 동작중인 IRIS를 종료하여야 합니다.
+이때, IRIS-Shutdown 명령어를 사용합니다. 
+
+.. code::
+
+    ~/IRIS/bin/Admin/IRIS-Shutdown
+
+이 종료 명령어는 IRIS를 종료하기 전에 RAM상에 적재된 데이터를 디스크에 기록하는 과정, IRIS 관련 프로세스 종료 등을 자동으로 실행하는 명령어입니다.
+각 노드에서 종료 명령어를 실행하면 아래 절차가 자동으로 실행됩니다.
+
+- Step 1. IRIS 종료 준비 작업: RAM상에 적재되어 있는 데이터를 디스크로 기록하는 과정입니다.
+- Step 2. IRIS 프로세스 종료: mps 명령어로 확인할 수 있는 프로세스들을 종료하는 과정입니다.
+- Step 3. 기본 프로세스 실행: IRIS 프로세스를 동작시키는 mps 프로세스를 종료하는 과정입니다.
+
+IRIS 종료 명령어는 마스터 노드에서 먼저 실행한 후, 각 데이터 노드에서 실행합니다.
+마스터 노드를 먼저 종료하는 이유는 현재 실행 중인 작업이 종료된 이후 추가 작업이 데이터 노드에 할당되지 않는 상태에서 종료하기 위한 조치입니다.
+또한, 데이터 노드가 여러 대인 경우, 데이터 노드에서의 종료 명령어 실행 순서는 정해져 있지 않으며, 다수의 데이터 노드에서 종료 명령을 동시에 실행할 수 있습니다.
+만일, IRIS 종료 명령어를 실행하는 동안 fail이 발생하거나 예시 화면과 다른 결과가 출력될 경우, 경우에 따라서는 RAM 디스크에 적재된 블록 파일들을 디스크로 옮기는 작업을 명령어를 통하여 직접 수행한 후 모든 프로세스를 강제로 종료할 수도 있습니다.
+이에 대한 자세한 설명은, “IRIS Trouble Shooting Guide”를 참조하시기 바랍니다.
+
+마스터 노드에서 IRIS 종료하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IRIS 관리자는 아래와 같이 마스터 노드에서 IRIS-Shutdown 명령을 실행한 후, 모든 프로세스들이 종료되었는지 확인하면 됩니다.
+
+.. code::
+
+    [iris@master ~]$ ~/IRIS/bin/Admin/IRIS-Shutdown
+
+상기 종료 명령어를 실행한 후, 프로세스의 종료 여부를 확인하는 방법은 다음과 같습니다.
+아래의 방법은 IRIS가 정상 동작 중에 프로세스들을 확인하여 출력된 화면이며, 마스터 노드에서 IRIS가 정상적으로 종료되었다면 아래의 모든 프로세스들은 화면에 출력되지 않습니다.
+
+.. code::
+
+    [iris@master ~]$ ps -ef | grep iris | grep python
+
+    iris      2365     1  0 00:41 pts/0    00:00:05 python /home/iris/IRIS/bin/MPS.D/mps.d /home/iris/IRIS/bin/MPS.D/mps.conf 5998
+    iris      2537  2365  0 00:41 pts/0    00:00:06 python /home/iris/IRIS/bin/EHD
+    iris      2539  2365  0 00:41 pts/0    00:00:02 python /home/iris/IRIS/bin/SMD
+    iris      2550  2365  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/BIM
+    iris      2554  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/lib/Ext/DataServer/DS
+    iris      2556  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/MSD
+    iris      2558  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/NSD
+    iris      2560  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/DTD
+    iris      2562  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/LISTENER
+    iris      2564  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/GTAD
+    iris      2566  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/DLD
+    iris      2568  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/PGD
+    iris      2570  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/PED
+    iris      2572  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/CMDD
+    iris      2574  2365  0 00:41 pts/0    00:00:06 python /home/iris/IRIS/bin/SM
+    iris      2576  2365  0 00:41 pts/0    00:00:00 python /home/iris/IRIS/bin/LogServer
+    iris      2584  2566  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/DLD
+    iris      2585  2566  0 00:41 pts/0    00:00:02 python /home/iris/IRIS/bin/DLD
+    iris      2586  2566  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/DLD
+    iris      2587  2566  0 00:41 pts/0    00:00:02 python /home/iris/IRIS/bin/DLD
+    iris      2589  2568  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/PGD
+    iris      2590  2568  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/PGD
+    iris      2591  2568  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/PGD
+    iris      2592  2568  0 00:41 pts/0    00:00:01 python /home/iris/IRIS/bin/PGD
+    iris      2738  2562  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/LISTENER
+
+
+데이터 노드에서 IRIS 종료하기
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+데이터 노드를 종료하는 경우, 종료 목적에 따라 절차가 달라집니다.
+
+**특정 데이터 노드 종료하기**
+
+만일, IRIS가 정상적으로 운영중인 상태에서 특정 데이터 노드만 종료하고자 할 경우, 마스터 노드에서 해당 데이터 노드에 더 이상의 신규 작업을 할당하지 않도록 조치한 후에 종료하여야 합니다.
+따라서, 해당 데이터 노드를 종료하기 전에 격리하는 절차가 필요합니다.
+아래는 IRIS가 운영중인 상태에서 특정 데이터 노드만 종료하는 절차입니다.
+
+#. 데이터 노드 격리
+    종료하고자 하는 데이터 노드에 신규 작업이 할당되지 않도록 격리합니다. 이 작업은 마스터 노드에서 실행하며, 실행 방법은 다음과 같습니다. 만일, 다수의 데이터 노드를 종료하고자 할 경우, 데이터 노드의 ID별로 아래 절차를 반복 실행합니다.
+
+    .. code::
+    
+        [iris@master ~]$ ~/IRIS/bin/Admin/NodeDisable [NodeID]
+
+#. 격리된 데이터 노드의 로그 출력 여부 확인
+    상기 절차에 따라 격리된 데이터 노드에 접속하여 더 이상 로그가 출력되지 않음을 확인합니다. 만일, 다수의 데이터 노드를 종료하고자 할 경우, 각 데이터 노드에 접속하여 아래 절차를 반복 실행합니다.
+
+    .. code::
+
+        [iris@slave#n ~]$ tail -F ~/IRIS/log/m6.log
+    
+#. 데이터 노드 종료
+    종료하고자 하는 데이터 노드에서 더 이상 로그가 출력되지 않은 것을 확인한 후, 아래 절차를 실행하여 데이터 노드를 종료합니다. 만일, 다수의 데이터 노드를 종료하고자 할 경우, 각 데이터 노드에 접속하여 아래 절차를 반복 실행합니다.
+
+    .. code::
+
+        [iris@slave#n ~]$ ~/IRIS/bin/Admin/IRIS-Shutdown
+
+**전체 데이터 노드 종료하기**
+
+전체 데이터 노드를 종료하는 방법은 상기의 마스터 노드를 종료하는 절차와 동일합니다.
+즉, IRIS 관리자는 아래와 같이 각 데이터 노드에서 IRIS-Shutdown 명령을 실행한 후, 모든 프로세스들이 종료되었는지 확인하면 됩니다.
+
+.. code::
+
+    [iris@slave#n ~]$ ~/IRIS/bin/Admin/IRIS-Shutdown
+
+
+상기 종료 명령어를 실행한 후, 각 데이터 노드에서 프로세스의 종료 여부를 확인하는 방법은 다음과 같습니다.
+아래의 방법은 데이터 노드에서 IRIS가 정상 동작 중에 프로세스들을 확인하여 출력된 화면이며, 데이터 노드에서 IRIS가 정상적으로 종료되었다면 아래의 모든 프로세스들은 화면에 출력되지 않습니다. 
+
+.. code::
+
+    [slave@slave#n ~]$ ps -ef | grep iris | grep python
+
+    iris      2364     1  0 00:41 pts/0    00:00:05 python /home/iris/IRIS/bin/MPS.D/mps.d /home/iris/IRIS/bin/MPS.D/mps.conf 6998
+    iris      2772  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/DSD
+    iris      2786  2364  0 00:42 pts/0    00:00:01 python /home/iris/IRIS/bin/LogServer
+    iris      2788  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/DTD
+    iris      2790  2364  1 00:42 pts/0    00:00:12 python /home/iris/IRIS/bin/RMD
+    iris      2792  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/UDM
+    iris      2794  2364  0 00:42 pts/0    00:00:02 python /home/iris/IRIS/bin/WSD
+    iris      2796  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/SCD
+    iris      2798  2364  1 00:42 pts/0    00:00:11 python /home/iris/IRIS/bin/SM
+    iris      2800  2364  2 00:42 pts/0    00:00:26 python /home/iris/IRIS/bin/PL_RAM
+    iris      2802  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/DCD
+    iris      2804  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/CMDD
+    iris      2806  2364  0 00:42 pts/0    00:00:05 python /home/iris/IRIS/bin/PR
+    iris      2808  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/ASD
+    iris      2810  2364  0 00:42 pts/0    00:00:00 python /home/iris/IRIS/bin/LSM
+    iris      2826  2772  0 00:42 pts/0    00:00:01 python /home/iris/IRIS/bin/DSD
+    iris      2827  2772  0 00:42 pts/0    00:00:01 python /home/iris/IRIS/bin/DSD
+    iris      2828  2772  0 00:42 pts/0    00:00:01 python /home/iris/IRIS/bin/DSD
+    iris      2829  2772  0 00:42 pts/0    00:00:01 python /home/iris/IRIS/bin/DSD
+
+
+IRIS 노드 및 환경 설정 정보 조회/변경하기
+-----------------------------------------
+IRIS 노드의 IP 주소, 환경 설정 정보 등 IRIS 노드의 정보는 각 노드의 ``${M6_HOME}/conf/common/m6.config`` 파일에 저장됩니다.
+m6.config 파일은 IRIS 설치 시에 모든 노드에 만들어지는 환경 설정 파일로, IRIS 관리자에 의하여 조회 및 수정할 수 있습니다.
+m6.config 파일에 저장되는 주요 설정 항목은 다음 표와 같습니다.
+m6.config 파일의 각 설정 항목에 대한 자세한 설명은 “Configuration Guide”을 참조하시기 바랍니다.
+
+
+.. table:: m6.config 파일의 설정 항목
+    :widths: 20, 80
+
+    ==========================  ===
+    설정 항목                   설명
+    ==========================  ===
+    M6                          노드 ID 및 IP 주소
+    HA                          마스터 노드 이중화(HA) 관련 정보
+    SYSTEM_INFO                 Buffer size, 데이터 이중화 등 기본 설정 정보
+    MPS                         MPS 프로세스의 포트 정보
+    RPD                         이벤트 로그의 email 전송을 위한 설정 정보
+    LOG                         로그 파일 생성을 위한 설정 정보
+    프로세스명                      각 프로세스별 포트 번호, timeout 등 설정 정보
+    EHD_WARN_CONDITION          WARN 이벤트 생성을 위한 리소스 사용 기준
+    EHD_BUSY_CONDITION_UPPER    BUSY 이벤트 생성을 위한 리소스 사용 기준
+    EHD_BUSY_CONDITION_LOWER    BUSY 상태에서 복구를 위한 리소스 사용 기준
+    ==========================  ===
+
+m6.config 파일에 저장된 환경 설정 항목의 내용은 vi 등 에디터를 이용하여 확인할 수 있습니다.
+만일, 특정 설정 항목을 변경하고자 할 경우, 설정 항목의 유형에 따라 다음과 같은 2가지 방법으로 분류됩니다.
+만일, 이벤트 로그 등 EHD 프로세스와 관련된 항목의 설정을 변경하려면 vi 등 에디터를 이용하여 m6.config 파일을 오픈하여 수정합니다.
+그러면, 변경된 설정 정보가 시스템에 자동으로 적용됩니다.
+만일, EHD 외의 항목의 설정을 변경하려면 다음과 같은 절차를 따라야 합니다.
+
+
+- Step 1. NodeDisable
+    설정 변경이 필요한 노드에 대하여 NodeDisable 명령어를 실행하여 해당 노드로 더 이상 데이터가 입력되지 않도록 격리합니다. NodeDisable 명령어는 마스터 노드에서 실행합니다.
+
+    .. code::
+
+        [iris@master ~]$ ~/IRIS/bin/Admin/NodeDisable [NODE ID]
+
+- Step 2. 프로세스 종료
+    해당 노드에 로그인하여 모든 프로세스를 종료합니다.
+
+    .. code::
+    
+        [iris@slave#n ~]$ ~/IRIS/bin/Admin/mps term all
+
+- Step 3. 환경 설정 항목 변경
+    에디터로 m6.config의 설정 항목을 변경합니다.
+
+- Step 4. 프로세스 재기동
+    해당 노드에서 모든 프로세스를 재기동합니다.
+
+    .. code::
+
+        [iris@slave#n ~]$ ~/IRIS/bin/Admin/mps act all
+
+- Step 5. NodeEnable
+    마스터 노드에서 설정 변경이 완료된 노드를 다시 사용할 수 있도록 연결합니다.
+
+    .. code::
+
+        [iris@master ~]$ ~/IRIS/bin/Admin/NodeEnable [NODE ID]
+

@@ -1,0 +1,26 @@
+<header>
+	<div class="header__container">
+		<div class="search__icon">
+			<i class="fa fa-search"></i>
+		</div>
+		<a href="/" class="header__logo">
+			<!--<img width="52" src="/assets/img/logo/iris-logo.svg">-->
+			<span class="header__logo-text">Diamond-E 오픈랩</span>
+		</a>
+		<div class="links__icon">
+			<i class="fa fa-bars"></i>
+		</div>
+		<!-- <ul class="header__links">
+			<li><a href="#products">제품</a></li>
+			<li><a href="#blog">블로그</a></li>
+			<li><a href="#company">회사</a></li>
+		</ul> -->
+		<div class="header__searchbar">
+			<form id="rtd-search-form" class="wy-form" action="{{ pathto('search') }}" method="get">
+                <input type="text" name="q" placeholder="Search by keyword" autofocus />
+                <input type="hidden" name="check_keywords" value="yes" />
+                <input type="hidden" name="area" value="default" />
+            </form>
+		</div>
+	</div>
+</header>

@@ -1,0 +1,158 @@
+#! /usr/bin/env python
+# coding: utf-8
+import shutil
+import subprocess
+import sys
+import os
+import argparse
+import glob
+from lib import util
+from lib.info_parser import DocInfoParser
+from lib.error import DocInfoError
+from lib.index_rst import IndexRstGenerator
+
+TEMP_SOURCE_DIR = 't_source'
+TEMP_BUILD_DIR = 't_build'
+DOC_DIR = 'docs'
+OUT_DIR = 'out'
+
+
+def check_build_target():
+    doc_list = util.get_doc_list(DOC_DIR)
+
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s GUIDENAME",
+    )
+
+    parser.add_argument('guide_name', help="")
+
+    if len(sys.argv) == 1:
+        sys.argv.append('help')
+
+    args = parser.parse_args()
+
+    if args.guide_name == 'ALL':
+        return doc_list
+    elif args.guide_name in doc_list:
+        return {args.guide_name: doc_list[args.guide_name]}
+    elif args.guide_name == 'help' or args.guide_name not in doc_list:
+        print('[document list]')
+        for doc_name in doc_list.keys():
+            print('  %s' % doc_name)
+
+        sys.exit()
+
+
+def setup_info(guide_path_list):
+    def _gen_prefix_path(g_path):
+        _, t1, t2 = g_path.rsplit(os.sep)
+        return os.path.join(t1, t2, '')
+
+    def _gen_caption(g_path):
+        _, t1, t2 = g_path.rsplit(os.sep)
+        t1 = t1.strip('_Doc')
+        return '%s.%s' % (t1, t2)
+
+    def _gen_html_static_path(g_path):
+        static_path = os.path.join(g_path, 'static')
+        if not os.path.exists(static_path):
+            os.makedirs(static_path)
+
+        # for windows
+        static_path = '/'.join( list(os.path.split(g_path)) + ['static'])
+        return static_path
+
+    with open(os.path.join(TEMP_SOURCE_DIR, '__init__.py'), 'w'):
+        pass
+
+    info_path = os.path.join('templates', 'covers', 'title.conf')
+    doc_info = DocInfoParser(info_path)
+    doc_info.parse()
+    static_path_list = ['/'.join(['templates', 'web', 'theme.css'])]
+    static_path_list += [_gen_html_static_path(guide_path) for guide_path in guide_path_list]
+
+    doc_info.write_info(
+        file_path=os.path.join(TEMP_SOURCE_DIR, 'info.py'),
+        static_path_list=static_path_list
+    )
+
+
+def run_sphinx():
+    cmd = 'sphinx-build -b docx %s %s -c ./' % (TEMP_SOURCE_DIR, TEMP_BUILD_DIR)
+    c = subprocess.Popen(cmd, shell=True)
+    c.communicate()
+
+
+def finish(doc_name):
+    try:
+        os.makedirs(OUT_DIR)
+    except OSError:
+        pass
+
+    file_list = glob.glob(os.path.join(TEMP_BUILD_DIR, 'IRIS*.docx'))
+
+    os.rename(
+        os.path.join(file_list[0]),
+        os.path.join(OUT_DIR, '{}.docx'.format(doc_name))
+    )
+
+
+def build():
+    build_target = check_build_target()
+
+    # 기존 파일 삭제
+    try:
+        shutil.rmtree(TEMP_SOURCE_DIR)
+    except OSError:
+        pass
+
+    try:
+        shutil.rmtree(TEMP_BUILD_DIR)
+    except OSError:
+        pass
+
+    try:
+        shutil.rmtree(OUT_DIR)
+    except OSError:
+        pass
+
+    os.makedirs(TEMP_SOURCE_DIR)
+
+    guide_path_list = []
+
+    try:
+        root_guide_name_list = []
+        for guide_full_name, path in build_target.items():
+            _, root_guide_name, guide_name = path.split(os.sep)
+            root_guide_name_list.append(root_guide_name)
+
+            try:
+                os.makedirs(os.path.join(TEMP_SOURCE_DIR, root_guide_name))
+            except FileExistsError:
+                pass
+
+            # 각 doc에 존재하는 index.rst 파일 복사
+            doc_index_file_path = os.path.join('docs', root_guide_name, 'index.rst')
+            shutil.copy(doc_index_file_path, os.path.join(TEMP_SOURCE_DIR, root_guide_name))
+
+            shutil.copytree(path, os.path.join(TEMP_SOURCE_DIR, root_guide_name, guide_name))
+            guide_path_list.append(os.path.join(TEMP_SOURCE_DIR, root_guide_name, guide_name))
+
+        setup_info(guide_path_list)
+
+        # 메인 index.rst 생성
+        index_rst = IndexRstGenerator("IRIS")
+        index_rst.add_doc_path_list(root_guide_name_list)
+        index_rst.write(os.path.join(TEMP_SOURCE_DIR, 'index.rst'))
+
+        run_sphinx()
+        finish('IRIS')
+
+    except DocInfoError as err:
+        print(err)
+
+
+if __name__ == '__main__':
+    build()
+
+

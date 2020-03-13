@@ -1,0 +1,164 @@
+PYTHON-API 사용법
+=================================
+
+개요
+---------------------------------
+
+API 버전
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IRIS 2.1에서 사용되는 PYTHON API는 버전은 mobigen-iris-python27-2.1.0.zip 파일이며, 다른 버전에서 사용중인 API와는 호환이 안될 수 있습니다.
+
+PYTHON 버전 및 설정 방법
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+API를 사용하기 위해서는 python 2.7 버전에서 사용해야 합니다. (python3.6의 경우 mobigen-iris-python36-2.1.0.zip 파일 사용)
+
+제공되는 파일을 PYTHONPATH 에 설정하여 사용하시면 됩니다.
+
+지원 쿼리
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+API에서 지원하는 쿼리의 종류는 다음과 같습니다.
+-	CREATE TABLE
+-	CREATE INDEX
+-	INSERT
+-	UPDATE
+-	DELETE
+-	LOAD
+-	SELECT
+-	DROP INDEX
+-	DROP TABLE
+
+기본 사용법
+---------------------------------
+
+이 장에서는 쿼리를 사용하기 위해 API를 이용한 IRIS의 접속 방법 및 예제 코드를 설명 합니다.
+
+
+기본 구조
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    import API.M6 as M6
+    
+    conn = M6.Connection({master_ip}:{port}, {user_id}, {passwd}, Database={database_name}, Direct=False)
+    
+    c = conn.Cursor()
+    
+    query = 'query syntax';
+    result = c.Execute2(query)
+    print result
+    
+    c.Close()
+    conn.close()
+
+
+MASTER_IP
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IP는 IRIS의 Master IP를 의미한다.
+
+PORT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IRIS에서 사용하는 Port는 일반 접속, Direct접속에 따라 다르게 설정을 해야 하며, 기본적인 Port는 다음과 같다.
+
+- 일반 접속
+    - 5050: 일반 접속을 사용할 경우에 사용하는 Port
+
+- Direct접속
+    - 5000 : Direct접속을 사용할 경우에 사용되는 Port
+    - Direct접속을 시도할 경우에는 M6.Connection의 Direct 옵션을 True로 해주어야 합니다.
+
+
+database name
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+접속하고자 하는 database name을 설정합니다.
+
+
+예제코드
+---------------------------------
+
+모든 쿼리들은 Exception이 발생하지 않을 경우 성공으로 간주합니다.
+
+CREATE[table,index]/UPDATE/INSERT/DELETE/DROP[table,index]
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    query = 'query syntax';
+    result = c.Execute2(query)
+    print result
+
+
+SELECT
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    q = "select * from LOCAL_TEST_TABLE;"
+    c.Execute2(q)
+    for row in c:
+        print row
+
+
+cursor 를 이용하여 하나의 레코드씩 fetch를 받으면 됩니다.
+
+
+LOAD
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+LOAD에 성공할 경우 
++OK SUCCESS. success count : 4
+와 같은 결과를 얻을 수 있습니다.
+이 경우 마지막 4의 의미는 4개의 Record가 Load되었다는 의미 입니다.
+
+
+.. code::
+
+    table             = "LOCAL_TEST_TABLE_JDBC";
+    key               = "K";
+    partition         = "20140101000000";
+    control_file_path = "LOCAL_TEST_TABLE.ctl";
+    data_file_path    = "LOCAL_TEST_TABLE.dat";
+    
+    c.SetFieldSep(',')
+    c.SetRecordSep('\n')						
+    result = c.Load(table, key, partition, control_file_path, data_file_path)
+    
+    print result
+
+
+
+IRIS Query
+---------------------------------
+
+IRIS에서는 기본적인 ANSI SQL의 거의 동일하게 지원을 하지만, 
+CREATE TABLE의 경우에는 IRIS에서 사용하는 옵션을 추가로 적어 주어야 합니다.
+
+CREATE TABLE
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code::
+
+    CREATE TABLE {table_name} (
+    	{colnum_name}	{type},
+    	{colnum_name}	{type},
+    	{colnum_name}	{type},
+    		…
+    	{colnum_name}	{type}
+    )
+    datascope		[ LOCAL 		| GLOBAL ]
+    ramexpire		[ n > 0      		| 0               ]  
+    diskexpire		[ n > 0      		| 0               ]
+    partitionkey	[ key_column_name	| NONE      ]
+    partitiondate	[ part_column_name	| NONE      ]
+    partitiondate	[ n > 0			| 0               ]
+    ;
+
+주의사항
+---------------------------------
+
+모든  API의 Connection은 쿼리가 종료 후 재접속 해야 합니다.
+
+즉, 두개의 쿼리를 실행할 경우 첫번째 쿼리의 결과를 얻은 후 Connection을 종료후, Connection을 재 접속 후 두번째 쿼리를 실행해야 합니다.
+
+API상에서 쿼리실행도중 에러가 발생할 경우 당시에 사용된 Connection은 강제로 종료가 됩니다. 따라서, 에러가 발생할 경우 재 접속을 해주어야 합니다.

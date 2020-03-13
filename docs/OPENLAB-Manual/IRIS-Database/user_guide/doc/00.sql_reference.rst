@@ -1,0 +1,443 @@
+SQL Reference
+=============
+
+IRIS 에서 사용가능한 SQL 문법을 설명합니다.
+
+DDL
+---
+
+CREATE TABLE
+~~~~~~~~~~~~
+
+::
+
+    create_table_stmt : CREATE TABLE STRING LPAREN table_schema RPAREN table_value 
+
+    table_schema : column_define_list table_constraint_list 
+
+    table_value : DATASCOPE STRING RAMEXPIRE value DISKEXPIRE value 
+                  PARTITIONKEY value PARTITIONDATE value PARTITIONRANGE value 
+
+    column_define_list : column_define 
+                       | column_define_list COMMA column_define 
+
+    table_constraint_list : empty 
+                          | COMMA table_constraint_stmt 
+                          | COMMA table_constraint_stmt table_constraint_list 
+
+    table_constraint_stmt : PRIMARY KEY LPAREN indexed_column_list RPAREN 
+                          | UNIQUE LPAREN indexed_column_list RPAREN 
+
+    indexed_column_list : indexed_column 
+                        | indexed_column COMMA indexed_column_list 
+
+    indexed_column : column_name 
+                   | column_name ASC 
+                   | column_name DESC 
+
+    column_define : column_name column_type column_constraint_list 
+
+    column_type : TEXT
+                | REAL
+                | INTEGER
+
+    column_constraint_list : column_constraint 
+                           | column_constraint_list column_constraint 
+                           | empty 
+
+    order_type : empty 
+               | ASC 
+               | DESC 
+
+    column_constraint : NOT NULL 
+                      | DEFAULT value 
+                      | UNIQUE 
+                      | PRIMARY KEY autoincrement 
+
+    autoincrement : AUTOINCREMENT 
+                  | empty 
+
+일반적인 CREATE SQL 아래에 IRIS 테이블 옵션이 추가됩니다.
+
+테이블 옵션은 모두 설정해야 합니다. 테이블 옵션의 설명은 아래에 소개되어
+있습니다.
+
+아래의 예시는 IRIS의 local table을 만드는 예시입니다.
+
+::
+
+    CREATE TABLE LOCAL_TEST_TABLE (
+       k         TEXT,
+       p         TEXT,
+       a         TEXT
+    )
+    datascope       LOCAL
+    ramexpire       30
+    diskexpire      34200
+    partitionkey    k
+    partitiondate   p
+    partitionrange  10
+    ;
+
+IRIS 테이블 옵션
+^^^^^^^^^^^^^^^^
+
+IRIS에서는 테이블을 생성시 테이블의 타입 및 보관 주기등을 설정해 주어야
+합니다.
+
+-  datascope : 데이터 저장 방식 설정 [ LOCAL OR GLOBAL ]
+-  ramexpire : 램에 저장하는 시간 [ GLOBAL 테이블일 경우 0 ]
+-  diskexpire : 디스크에 저장하는 시간 [ GLOBAL 테이블 경우 0 ]
+-  partitionkey : KEY 로 사용할 값이 저장되는 컬럼 [ GLOBAL 테이블 경우
+   None ]
+-  partitiondate : PARTITION으로 사용할 값이 저장되는 컬럼 [ GLOBAL
+   테이블 경우 None ]
+-  partitionragne : 하나의 PARTITION 이 가지는 범위 [ GLOBAL 테이블 경우
+   0 ]
+
+지원하는 column-constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  PRIMARY KEY [\|ASC\|DESC] [AUTOINCREMENT]
+
+   | GLOBAL TABLE 에서만 정상동작합니다.
+   | PRIMARY KEY 는 NULL 을 허용합니다. DESC 옵션은 현재 정상지원하지
+   않으며 ASC와 동일하게 동작합니다. 모든 컬럼타입에서 동작합니다.
+
+-  INTEGER PRIMARY KEY 컬럼
+
+   INTEGER PRIMARY KEY 컬럼은 기본적으로 값증가기능(autoincrement)이
+   적용되어 있습니다.
+
+   정수형 데이터만 insert, update가 가능합니다. (예외로, NULL 값을
+   insert 하는 경우 키값을 생성해서 (현재 최대값+1) 넣습니다. 이외의
+   경우에는 datatype mismatch 오류를 출력합니다.)
+
+   AUTOINCREMENT 옵션은 INTEGER PRIMARY KEY 컬럼 만 가능합니다.
+
+   INTEGER PRIMARY KEY 컬럼에 AUTOINCREMENT 옵션을 넣으면 키값 생성
+   알고리즘이 변경되어 키값의 "monotonically increasing" 이 보장됩니다.
+
+   AUTOINCREMENT 옵션 없을때 : 다음 키값이 키값의
+   최대값(9223372036854775807)을 넘으면 임의(랜덤)의 수를 현재 최
+   대키값으로 잡고 다음 키값을 생성합니다. (unique 속성 보장)
+
+   AUTOINCREMENT 옵션 있을때 : 다음 키값이 키값의
+   최대값(9223372036854775807)을 넘으면 ”database or disk is full” 오
+   류메세지를 출력합니다.
+
+   AUTOINCREMENT 옵션은 ASC 또는 공백만 허용합니다. (공백이면 ASC로
+   설정합니다.)
+
+-  DEFAULT {default-value}
+
+   컬럼 기본값을 설정합니다.
+
+-  NOT NULL
+
+   NULL 값이 들어오면 오류를 발생합니다. LOAD 작업시, 해당되는 데이터는
+   무시되고 나머지 데이터만 저장됩니다.
+
+-  UNIQUE
+
+   중복값이 들어오면 오류를 발생합니다. GLOBAL TABLE 에서만
+   정상동작합니다.
+
+지원하는 table-constraint
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+-  PRIMARY KEY ( ColumnName [, ColumnName] )
+
+   GLOBAL TABLE 에서만 정상동작합니다.
+
+   각 테이블별로 PRIMARY KEY 설정은 한 번만 할 수 있습니다. (위의
+   column-constraint 에서 이미 PRIMARY KEY 를 설정했다면
+   table-constraint 에서 설정할 수 없습니다.)
+
+   PRIMARY KEY 는 NULL 을 허용합니다.
+
+-  UNIQUE ( ColumnName [, ColumnName] )
+
+   GLOBAL TABLE 에서만 정상동작합니다.
+
+DROP TABLE
+~~~~~~~~~~
+
+::
+
+    drop_table_stmt : DROP TABLE if_exists STRING
+
+테이블을 삭제합니다.
+
+LOCAL 테이블을 삭제하면, 쿼리 실행시에는 메타데이터만 삭제하며 실제
+파일은 백그라운드에서 삭제합니다.
+
+아래는 LOCAL\_TEST\_TABLE 을 삭제하는 예제입니다.
+
+::
+
+    DROP TABLE LOCAL_TEST_TABLE;
+
+CREATE INDEX
+~~~~~~~~~~~~
+
+::
+
+    create_index_stmt : CREATE INDEX STRING ON STRING LPAREN indexed_column_list RPAREN 
+                      | CREATE UNIQUE INDEX STRING ON STRING LPAREN indexed_column_list RPAREN 
+
+    indexed_column_list : indexed_column 
+                        | indexed_column COMMA indexed_column_list 
+
+    indexed_column : column_name 
+                   | column_name ASC 
+                   | column_name DESC 
+
+인덱스를 생성합니다. GLOBAL테이블의 경우에는 해당 명령어를 그대로
+사용하시면 됩니다.
+
+하지만, LOCAL테이블의 경우에는 해당 명령어를 사용하면 존재하는 모든
+데이터에 대해서 인덱스를 생성하게 됩니다.
+
+따라서 데이터가 많이 저장되어 있을 경우 서비스에 장애가 발생할 수도
+있습니다.
+
+따라서 새로 저장되는 데이터부터 인덱스를 생성하는 것이 안전하며, 방법은
+DotCommand인 .table index add 를 사용하면 됩니다.
+
+::
+
+    use DDL: 
+    CREATE INDEX LOCAL_TEST_TABLE_IDX ON LOCAL_TEST_TABLE (a desc);
+
+    use DotCommand:
+    .table index add LOCAL_TEST_TABLE LOCAL_TEST_TABLE (a desc)
+
+DROP INDEX
+~~~~~~~~~~
+
+::
+
+    drop_index_stmt : DROP INDEX if_exists STRING 
+
+인덱스를 삭제합니다. GLOBAL테이블의 경우에는 해당 명령어를 그대로
+사용하시면 됩니다.
+
+하지만, LOCAL테이블의 경우에는 해당 명령어를 사용하면 존재하는 모든
+데이터에 대해서 인덱스를 삭제하게 됩니다.
+
+따라서 데이터가 많이 저장되어 있을 경우 서비스에 장애가 발생할 수도
+있습니다.
+
+따라서 새로 저장되는 데이터부터 인덱스를 삭제하는 것이 안전하며, 방법은
+DotCommand인 .table index del 를 사용하면 됩니다.
+
+::
+
+    use DDL:
+    DROP INDEX LOCAL_TEST_TABLE_IDX;
+
+    use DotCommand:
+    .table indexl del LOCAL_TEST_TABLE_IDX
+
+ALTER TABLE
+~~~~~~~~~~~
+
+::
+
+    alter_table_stmt : ALTER TABLE table_name ADD COLUMN column_define 
+
+테이블 스키마를 변경합니다. 해당 명령어로는 컬럼 추가만 가능합니다.
+
+때문에 GLOBAL로 생성된 테이블의 경우에는 컬럼 추가만 가능합니다.
+
+하지만 LOCAL로 생성된 테이블의 경우에는 기존 데이터는 무시하고, 새로
+저장되는 데이터부터 새로운 스키마를 적용하고 싶을 경우에는 DotCommand의
+.table schema --edit 명령어를 사용하면 됩니다.
+
+LOCAL테이블에 alter table을 사용할 경우에는 모든 데이터의 스키마를
+변경하기 때문에 서비스 장애가 발생할 수도 있습니다.
+
+DML
+---
+
+INSERT
+~~~~~~
+
+::
+
+    insert_statement : INSERT INTO STRING LPAREN column_list RPAREN VALUES 
+                       LPAREN param_list RPAREN 
+
+    column_list : column_name 
+                | column_name COMMA column_list 
+
+    param_list : param COMMA param_list 
+               | param 
+
+    param : expr 
+          | value 
+          | STAR 
+
+하나의 레코드를 추가합니다.
+
+Local 테이블에 INSERT를 사용한 경우 key와 partition 값은 테이블 생성시
+설정한 컬럼의 값을 사용합니다.
+
+아래의 예시에서 LOCAL\_TEST\_TABLE은 k : keypartition, p : datepartition
+로 생성되었습니다.
+
+::
+
+    INSERT INTO LOCAL_TEST_TABLE (k, p, a) VALUES ('k2', '20110616000000', '1');
+
+UPDATE
+~~~~~~
+
+::
+
+    update_statement : UPDATE table_name SET update_column_list where_expression 
+
+    update_column_list : update_column 
+                       | update_column COMMA update_column_list 
+
+    update_column : column_name EQ expr 
+
+특정 컬럼을 사용자가 원하는 값으로 변경합니다.
+
+아래는 LOCAL\_TEST\_TABLE의 a 컬럼을 'update'로 변경하는 예제입니다.
+
+::
+
+    UPDATE LOCAL_TEST_TABLE SET a = 'update';
+
+DELETE
+~~~~~~
+
+::
+
+    delete_statement : DELETE FROM table_name where_expression 
+
+WHERE 절 조건에 맞는 데이터를 삭제합니다.
+
+아래는 LOCAL\_TEST\_TABLE중 a 컬럼이 'update'인 레코드를 삭제하는
+예제입니다.
+
+::
+
+    DELETE FROM LOCAL_TEST_TABLE WHERE a = 'update';
+
+SELECT 쿼리
+~~~~~~~~~~~
+
+::
+
+    select_statement : SELECT result_expression FROM table_expression where_expression 
+                       group_by_expression compound_op_select order_by_expression 
+                       limit_expression 
+
+    result_expression : result_column 
+                      | result_column COMMA result_expression 
+
+    result_column : STAR 
+                  | column_name
+                  | alias_expression 
+                  | term 
+                  | expr  
+
+    alias_expression : expr STRING 
+                     | expr AS STRING 
+                     | LPAREN select_statement RPAREN STRING 
+                     | LPAREN select_statement RPAREN AS STRING 
+
+    table_expression : table_list 
+
+    table_list : table_name 
+               | table_name join_expr_list 
+
+    join_expr_list : join_expr join_expr_list 
+                   | join_expr 
+
+    join_expr : empty 
+              | join_op table_name join_args 
+
+    join_op : COMMA 
+            | INNER JOIN 
+            | LEFT OUTER JOIN 
+
+    join_args : ON expr 
+              | empty  
+
+    where_expression : [where] expr 
+                     | empty 
+
+    group_by_expression : GROUP BY result_expression 
+                        | empty 
+
+    compound_op_select : compound_op select_core 
+                       | empty  
+
+    compound_op : UNION 
+                | UNION ALL 
+                | INTERSECT 
+                | EXCEPT 
+
+    order_by_expression : ORDER BY order_by_result_expression 
+                        | empty 
+
+    order_by_result_expression : result_column 
+                               | result_column ASC 
+                               | result_column DESC 
+                               | result_column COMMA order_by_result_expression 
+                               | result_column ASC COMMA order_by_result_expression 
+                               | result_column DESC COMMA order_by_result_expression 
+
+    limit_expression : ideallimit_expression 
+                     | mlimit_expression 
+                     | dlimit_expression 
+
+    ideallimit_expression : LIMIT NUMBER 
+                          | LIMIT NUMBER COMMA NUMBER 
+                          | empty 
+
+    mlimit_expression : MLIMIT NUMBER 
+                      | MLIMIT NUMBER COMMA NUMBER 
+                      | empty 
+
+    dlimit_expression : DLIMIT NUMBER 
+                      | DLIMIT NUMBER COMMA NUMBER 
+                      | empty 
+
+LOCAL 테이블에 대한 쿼리를 실행할 때에는 LOCATION HINT 를 반드시
+사용하세요.
+
+아래는 검색 쿼리의 기본 예제 입니다.
+
+::
+
+    예시)
+    /*+ BYPASS, LOCATION (KEY = 'k1' AND PARTITION >= '20150101000000'
+    AND PARTITION < '20150102000000') */
+    SELECT * FROM LOCAL_TEST_TABLE;
+
+    /*+ LOCATION (PARTITION >= '20150101000000' AND PARTITION < '20150102000000') */
+    SELECT sum(a) / count(a) FROM LOCAL_TEST_TABLE WHERE a > 10;
+
+유의사항
+^^^^^^^^
+
+[\*] 컬럼 사용에 제약사항이 있습니다.
+
+-  Table Alias 를 지원하지 않습니다.
+
+   ::
+
+       FAIL : select a.* from (select * from X) a; 
+
+-  단일 테이블을 사용한 에서만 사용할 수 있습니다.
+
+   ::
+
+       FAIL : select * from X, Y;
+
+

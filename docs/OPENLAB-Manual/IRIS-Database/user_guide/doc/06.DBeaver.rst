@@ -1,0 +1,114 @@
+개요
+====
+
+DBeaver 사용법
+
+목차
+====
+
+1. DBeaver 개요
+2. DBeaver 설치
+3. DBeaver Thrift Server (Hive) 사용방법
+4. DBeaver IRIS JDBC 사용방법
+
+DBeaver Overview
+================
+
+DBeaver 특징
+------------
+
+-  DBeaver는 개발자 및 데이터베이스 관리자를 위한 무료 및 오픈소스인
+   범용 데이터 베이스 도구
+-  오픈 소스 프레임 워크를 기반으로 하여 다양한 플러그인 지원
+-  JDBC 드라이버가 있는 모든 데이터베이스 지원
+-  JDBC 드라이버가 없는 외부 데이터 소스 처리 가능
+
+DBeaver가 지원하는 관계형 데이터베이스
+--------------------------------------
+
+-  MySQL
+-  Oracle
+-  PostgreSQL
+-  IBM DB2
+-  Microsoft SQL Server
+-  Sybase
+-  JAVA DB
+-  Firebird
+-  SQLite
+-  Mimer
+-  HSQLDB
+-  H2
+-  Teradata
+-  Cache
+-  Ingres
+-  Linter
+
+DBeaver가 지원하는 NoSQL 데이터베이스
+-------------------------------------
+
+-  MongoDB
+-  Cassandra
+
+지원 가능 OS
+------------
+
+-  Windows (2000/XP/2003/Vista/7/8/10)
+-  Linux
+-  Max OS
+-  Solaris
+
+DBeaver 설치
+============
+
+-  DBeaver 다운로드 링크
+-  https://dbeaver.io/downlaod
+
+DBeaver Thrift Server (Hive) 사용방법
+=====================================
+
+Connection 생성
+---------------
+
+|c1| |c2| |c3|
+
+Connection 생성 결과
+--------------------
+
+.. figure:: ./pic/c4.png
+   :alt: c4
+
+   c4
+
+쿼리 실행
+---------
+
+|q1| |q2|
+
+DBeaver IRIS JDBC 사용방법
+==========================
+
+IRIS JDBC 사용을 위한 Driver Manager 추가
+-----------------------------------------
+
+|i1| |i2| |i3| |i4| |i5| |i6| |i7|
+
+IRIS 쿼리 실행
+--------------
+
+.. figure:: ./pic/iq1.png
+   :alt: iq1
+
+   iq1
+
+.. |c1| image:: ./pic/c1.png
+.. |c2| image:: ./pic/c2.png
+.. |c3| image:: ./pic/c3.png
+.. |q1| image:: ./pic/q1.png
+.. |q2| image:: ./pic/q2.png
+.. |i1| image:: ./pic/i1.png
+.. |i2| image:: ./pic/i2.png
+.. |i3| image:: ./pic/i3.png
+.. |i4| image:: ./pic/i4.png
+.. |i5| image:: ./pic/i5.png
+.. |i6| image:: ./pic/i6.png
+.. |i7| image:: ./pic/i7.png
