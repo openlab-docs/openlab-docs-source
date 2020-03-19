@@ -1,3 +1,0 @@
-.. toctree::
-
-    search.rst

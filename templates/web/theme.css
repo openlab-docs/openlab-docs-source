@@ -103,6 +103,7 @@ footer {
 
 .wy-menu-vertical > ul.current {
 	display: block;
+	width: 330px;
 }
 
 .wy-menu-vertical li.toctree-l2.current li.toctree-l3.current >a {
@@ -210,11 +211,13 @@ h1, h2, .rst-content .toctree-wrapper p.caption, h3, h4, h5, h6, legend {
 .wy-nav-side {
 	border-right: 1px solid #ddd;
 	background: #f9f9f9;
+	width: 330px;
 }
 
 .wy-side-nav-search {
 	margin-top: 70px;
 	border-right: 1px solid #ddd;
+	width: 330px;
 }
 
 .wy-side-nav-search .icon, .wy-side-nav-search .version {
@@ -350,6 +353,7 @@ header .header__searchbar {
 	}
 	.wy-menu-vertical {
 		top: 0;
+		width: 330px;
 	}
 	.wy-nav-content-wrap {
 		overflow-y: scroll;

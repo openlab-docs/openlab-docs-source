@@ -1,4 +1,0 @@
-# IRIS-GettingStarted
-
-Contents example
-=============================
