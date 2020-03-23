@@ -106,6 +106,10 @@ footer {
 	width: 330px;
 }
 
+.wy-side-scroll {
+	width: 350px;
+}
+	
 .wy-menu-vertical li.toctree-l2.current li.toctree-l3.current >a {
     background: #E0E0E0;
 }
