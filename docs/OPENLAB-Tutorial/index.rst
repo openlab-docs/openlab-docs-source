@@ -74,9 +74,9 @@
 
 "오픈랩" 아이콘을 클릭하면 새로운 인터넷브라우저가 열리면서
 
-카테고리, 상품명, 설명, 구매날짜, 분석신청, 분석가는여부 를 확인하는 기본적인 오픈랩 화면이 나옵니다
+카테고리, 상품명, 설명, 구매날짜, 상품 등록 날짜, 분석모델상태, 분석 모델 만료 예정일을 확인하는 기본적인 오픈랩 화면이 나옵니다
 
-.. image:: ./images/openlab_tutorial_010.png
+.. image:: ./images/openlab_tutorial_010_new.png
 
 
 4단계) 구매 데이터에 대한 분석하기 신청
@@ -84,43 +84,33 @@
 
 이번단계에서는 앞서 진행해서 구매한 "VDS콘존별 소통정보 1시간 통계"물품에 대해 분석데이터 신청하는 방법을 진행하겠습니다
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭하면 여러종류의 메뉴가 나오는데 그중에서 "데이터셋 목록" 메뉴를 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭하면 여러종류의 메뉴가 나오는데 그중에서 "구매 데이터셋 목록" 메뉴를 클릭합니다
 
-.. image:: ./images/openlab_tutorial_011.png
+.. image:: ./images/openlab_tutorial_011_new.png
 
 "데이터넷 목록"을 클릭하면 상품을 구매한 상품목록과 기본적으로 제공하는 상품목록이 나옵니다
 
-저희는 구매한 상품에대해서 데이터분석신청을 하는것이 목표이기 때문에 파란색의 "신청"버튼을 클릭합니다
+저희는 구매한 상품에대해서 데이터분석신청을 하는것이 목표이기 때문에 분석모델상태 항목이 표현되고, 분석 가능 여부를 보여줍니다.
 
-.. image:: ./images/openlab_tutorial_011_1.png
-
-"신청" 버튼을 클릭했을때 정상적으로 신청이 이루어지면,
-
-아래의 그림과 같이 신청버튼이 신청완료로 바뀌고 분석가능여부란에 O가 표시가 됩니다
-
-.. image:: ./images/openlab_tutorial_011_2.png
+.. image:: ./images/openlab_tutorial_011_2_new.png
 
 다시 한번더 정상적으로 분석신청이 되었는지 확인하기 위해서
 
 상단의 메인 검색 입력란에 "VDS콘존별"을 입력하고 "검색"버턴을 클릭을 합니다
 
-.. image:: ./images/openlab_tutorial_012.png
+.. image:: ./images/openlab_tutorial_012_new.png
 
-아래의 그림과 같이 "VDS콘존별" 상품에 대해 분석가능영부가 "O" 로 되어 있어서 분석신청이 제대로 이루어진것을 확인 할수 있으며,
-
-이제 데이터의 모델설정및 검색, 시각화 준비가 되었습니다
-
-.. image:: ./images/openlab_tutorial_013.png
+아래의 그림과 같이 "VDS콘존별" 상품에 대해 분석 모델 상태가 '분석 가능' 으로 되어 있어서 데이터의 모델설정및 검색, 시각화 준비가 되었습니다
 
 
 5단계) 데이터 모델 상세 항목 설정 (옵션)
 -----------------------
 
-이번단계에서는 4단계에서 진행한 분석신청이 정상적으로 이루어진 구매한 물품에대해 데이터모델을 설정하는 단계입니다
+이번단계에서는 4단계에서 진행한 분석 가능한 구매한 물품에대해 데이터모델을 설정하는 단계입니다
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭하면 여러종류의 메뉴가 나오는데 그중에서 "데이터모델" 메뉴를 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록 목록" 메뉴를 클릭하면 여러종류의 메뉴가 나오는데 그중에서 "데이터모델" 메뉴를 클릭합니다
 
-.. image:: ./images/openlab_tutorial_014.png
+.. image:: ./images/openlab_tutorial_014_new.png
 
 데이터모델을 클릭하면 데이터모델목록  화면이 나타납니다 
 
@@ -168,9 +158,9 @@
 
 이번단계에서는 5단계에서 진행한 데이터모델을 설정을 했으면 물품에대해 검색을 하는 단계입니다
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "검색"을 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭해서 "검색"을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_020.png
+.. image:: ./images/openlab_tutorial_020_new.png
 
 화면이 바뀌면서 왼쪽에는 2단계에서 구매한 "VDS콘존별 소통정보1시간통계"항목과 기본적으로 제공하는 항목이 나열되어 나옵니다
 
@@ -232,9 +222,9 @@
 
 - **막대형 차트 사용하기**
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "시각화"을 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭해서 "시각화"을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_026.png
+.. image:: ./images/openlab_tutorial_026_new.png
 
 "분석유형선택"을 클릭하면 여러종류의 시각화종류가 나오는데 주황색으로 표시한 "막대형"을 클릭합니다
 
@@ -280,11 +270,11 @@
 참고1) 시각화 결과를 템플릿으로 관리
 -----------------------
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "분석 템플릿"을 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭해서 "분석 템플릿"을 클릭합니다
 
 해당 페이지는 STEB7에서 진행했던 시각화결과를 다시 볼수 있는 기능을 제공합니다 
 
-.. image:: ./images/openlab_tutorial_043.png
+.. image:: ./images/openlab_tutorial_043_new.png
 
 이번 튜토리얼에서는 예로 아래 그림의 이름항목이 "VDS콘존별_막대형"을 클릭을 해봅니다 
 
@@ -298,34 +288,24 @@
 참고2) 대화형 분석도구(R,Jupyter,Zeppelin)
 -----------------------
 
-Diamond-E에서는 Jupyter, RStudio, Zeppelin 세자기의 오픈소스 분석도구를 재공하고 있습니다 
+Diamond-E에서는 Jupyter, RStudio 두가지의 오픈소스 분석도구를 재공하고 있습니다 
 
 - **Jupyter**
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "Jupyter"을 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭해서 "Jupyter"을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_045.png
+.. image:: ./images/openlab_tutorial_045_new.png
 
 아래의 그림과 같이 Jupyter화면이 나타나면서 Jupyter를 사용할수 있습니다 
 
-.. image:: ./images/openlab_tutorial_045_1.png
+.. image:: ./images/openlab_tutorial_045_1_new.png
 
 - **RStudio**
 
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "RStudio"을 클릭합니다
+왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 구매 데이터셋 목록" 메뉴를 클릭해서 "RStudio"을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_046.png
+.. image:: ./images/openlab_tutorial_046_new.png
 
 아래의 그림과 같이 RStudio화면이 나타나면서 RStudio를 사용할수 있습니다
 
-.. image:: ./images/openlab_tutorial_046_1.png
-
-- **Zeppelin**
-
-왼쪽상단에 파란색의"Diamond-E 오픈랩데이터 > 데이터셋 목록" 메뉴를 클릭해서 "Zeppelin"을 클릭합니다
-
-.. image:: ./images/openlab_tutorial_047.png
-
-아래의 그림과 같이 Zeppelin화면이 나타나면서 Zeppelin를 사용할수 있습니다
-
-.. image:: ./images/openlab_tutorial_047_1.png
+.. image:: ./images/openlab_tutorial_046_1_new.png
