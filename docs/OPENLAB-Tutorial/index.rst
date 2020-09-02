@@ -70,7 +70,7 @@
 
 (*로그인이 되어 있어야만 "오픈랩"을 이용할수 있습니다. 로그인이 안되어 있으면 로그인창으로 화면이 전환됩니다)
 
-.. image:: ./images/openlab_tutorial_009_new.png
+.. image:: ./images/openlab_tutorial_009_new.PNG
 
 "오픈랩" 아이콘을 클릭하면 새로운 인터넷브라우저가 열리면서
 
