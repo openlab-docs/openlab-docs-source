@@ -9,7 +9,7 @@
 
 로그인을 진행하여 정상적으로 로그인이 되었으면 이제 물품을 구매할 준비가 되었습니다
 
-.. image:: ./images/openlab_tutorial_001_new.png
+.. image:: ./images/openlab_tutorial_001_new.PNG
 
 
 2단계) 데이터 상품 구매
@@ -21,11 +21,11 @@
 
 상단의 검색 입력란에 구매하려는 "VDS콘존별" 검색어를 입력하고 "검색"버튼을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_002_new.png
+.. image:: ./images/openlab_tutorial_002_new.PNG
 
 구매하려는 "VDS콘존별"이 싸이트에서 제공하는걸 볼수 있습니다 
 
-.. image:: ./images/openlab_tutorial_003_new.png
+.. image:: ./images/openlab_tutorial_003_new.PNG
 
 검색해서 나오는 물품중에서 "VDS콘존별 소통정보 1시간 통계" 상품을 클릭하여 상세정보를 확인 할수 있습니다
 
