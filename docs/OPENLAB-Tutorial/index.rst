@@ -9,7 +9,7 @@
 
 로그인을 진행하여 정상적으로 로그인이 되었으면 이제 물품을 구매할 준비가 되었습니다
 
-.. image:: ./images/openlab_tutorial_001.png
+.. image:: ./images/openlab_tutorial_001_new.png
 
 
 2단계) 데이터 상품 구매
@@ -21,21 +21,21 @@
 
 상단의 검색 입력란에 구매하려는 "VDS콘존별" 검색어를 입력하고 "검색"버튼을 클릭합니다
 
-.. image:: ./images/openlab_tutorial_002.png
+.. image:: ./images/openlab_tutorial_002_new.png
 
 구매하려는 "VDS콘존별"이 싸이트에서 제공하는걸 볼수 있습니다 
 
-.. image:: ./images/openlab_tutorial_003.png
+.. image:: ./images/openlab_tutorial_003_new.png
 
 검색해서 나오는 물품중에서 "VDS콘존별 소통정보 1시간 통계" 상품을 클릭하여 상세정보를 확인 할수 있습니다
 
-.. image:: ./images/openlab_tutorial_004.png
+.. image:: ./images/openlab_tutorial_004_new.png
 
 상세정보에서는 데이터상품정보와 가격, 샘플저보, 판매연락처, 제약 및 취소환불 규정, 데이터이용하기, 장바구니, 찜하기 정보를 확인할수 있습니다.
 
 이번 튜토리얼에서는 데이터상품을 구매하려고 하기 때문에 "데이터 이용하기" 버튼을 눌러서 결제절차를 진행 하겠습니다
 
-.. image:: ./images/openlab_tutorial_005.png
+.. image:: ./images/openlab_tutorial_005_new.png
 
 
 데이터 이용하기 버튼을 누르면 아래의 주문결제 화면이 
@@ -48,17 +48,17 @@
 
 아래의 화면과 같이 거래상품 정보와 최종결제정보 창이 나오는데 "결제하기" 버튼을 누릅니다
 
-.. image:: ./images/openlab_tutorial_006.png
+.. image:: ./images/openlab_tutorial_006_new.png
 
 정상적으로 결제절차가 이루어지면 어래와 같은 주문완료 페이지로 바뀝니다
 
 나의거래정보를 클릭하면 결제한 물품의 구매내역을 확인할수 있습니다
 
-.. image:: ./images/openlab_tutorial_007.png
+.. image:: ./images/openlab_tutorial_007_new.png
 
 아래의 그림과 같이 현재까지 진행해서 구매한 "VDS콘존별 소통정보 1시간 통계"가 정상적으로 구매가 된것을 확인할수 있습니다
 
-.. image:: ./images/openlab_tutorial_008.png
+.. image:: ./images/openlab_tutorial_008_new.png
 
 
 3단계) 오픈랩 실행
@@ -70,7 +70,7 @@
 
 (*로그인이 되어 있어야만 "오픈랩"을 이용할수 있습니다. 로그인이 안되어 있으면 로그인창으로 화면이 전환됩니다)
 
-.. image:: ./images/openlab_tutorial_009.png
+.. image:: ./images/openlab_tutorial_009_new.png
 
 "오픈랩" 아이콘을 클릭하면 새로운 인터넷브라우저가 열리면서
 
