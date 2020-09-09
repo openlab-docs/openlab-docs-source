@@ -9,7 +9,7 @@
 
 로그인을 진행하여 정상적으로 로그인이 되었으면 이제 물품을 구매,할 준비가 되었습니다
 
-.. image:: ./images/openlab_tutorial_001_new.PNG
+.. image:: ./images/openlab_potal_001.png
 
 
 2단계) 데이터 상품 구매
