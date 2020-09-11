@@ -58,7 +58,7 @@ https://docs.diamond-e.kr/manual/OPENLAB-Tutorial/index.html
 
 포탈 메뉴의 데이터 활용 버튼을 클릭시 데이터 활용 사례를 모아 볼 수 있습니다.
 
-.. image:: ./images/openlab_usedata.png
+.. image:: ./images/openlab_potal_usedata.png
 
 5단계) 데이터 분석
 
@@ -76,29 +76,29 @@ https://docs.diamond-e.kr/manual/OPENLAB-Manual/index.html
 
 포탈 메뉴의 이용안내 버튼 클릭시 공지사항, FAQ, Q&A, 데이터 신청 및 문의내역, 데이터 신청 및 문의등록, 사이트맵을 볼 수 있습니다.
 
-.. image:: ./images/openlab_useInfo.png
+.. image:: ./images/openlab_potal_useInfo.png
 
 공지사항은 관리자가 공지하는 글을 읽을 수 있는 페이지 입니다. '구분' 에 따라 공지, 자료, 데이터 상품 구매, 데이터 활용 사례로 나뉩니다.
 
-.. image:: ./images/openlab_category.png
+.. image:: ./images/openlab_potal_category.png
 
 공지사항 글을 클릭하면 관리자가 적어놓은 공지사항 글을 읽을 수 있습니다. 이전글, 다음글로 이동이 가능하며 목록버튼 클릭 시 공지사항 글 목록 화면으로 이동합니다.
 
-.. image:: ./images/openlab_notice.png
+.. image:: ./images/openlab_potal_notice.png
 
 FAQ 화면은 사용자들이 자주 묻는 질문들을 볼 수 있습니다.
 
-.. image:: ./images/openlab_faq.png
+.. image:: ./images/openlab_potal_faq.png
 
 Q%A 화면은 사용자들이 질문을 올리면 관리자가 답변을 달 수 있는 페이지 입니다. 이전글, 다음글로 이동이 가능하며 목록버튼 클릭 시 Q&A 글 목록 화면으로 이동합니다.
 
-.. image:: ./images/openlab_qna.png
+.. image:: ./images/openlab_potal_qna.png
 
 데이터 신청 및 문의등록 화면은 사용자가 데이터 신청 및 문의를 등록할 수 있는 페이지 입니다. 상품 카테고리 별로 신청 및 문의를 등록할 수 있으며, 비밀글 여부에서 비밀클 선택시
 
 비밀번호를 입력할 수 있습니다. 파일 업로드를 통해 파일을 첨부할 수도 있으며, 신청 및 문의등록 버튼 클릭시 등록됩니다.
 
-.. image:: ./images/openlab_dataacc.png
+.. image:: ./images/openlab_potal_dataacc.png
 
 데이터 신청 및 문의내역 화면은 사용자가 데이터 신청 및 문의등록 페이지에서 등록한 글을 볼 수 있는 페이지 입니다. 등록 시 비밀글로 등록된 글을 선택시 비밀번호 확인 이라는 팝업창이
 
