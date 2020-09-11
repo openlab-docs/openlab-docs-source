@@ -61,6 +61,7 @@ https://docs.diamond-e.kr/manual/OPENLAB-Tutorial/index.html
 .. image:: ./images/openlab_potal_usedata.png
 
 5단계) 데이터 분석
+-----------------------
 
 포탈 메뉴의 데이터 분석 버튼 클릭시 오픈랩 바로가기 및 오픈랩 이용 및 메뉴얼을 볼 수 있습니다.
 
@@ -73,6 +74,7 @@ https://docs.diamond-e.kr/manual/OPENLAB-Tutorial/index.html
 https://docs.diamond-e.kr/manual/OPENLAB-Manual/index.html
 
 6단계) 이용안내
+-----------------------
 
 포탈 메뉴의 이용안내 버튼 클릭시 공지사항, FAQ, Q&A, 데이터 신청 및 문의내역, 데이터 신청 및 문의등록, 사이트맵을 볼 수 있습니다.
 
@@ -113,6 +115,7 @@ Q%A 화면은 사용자들이 질문을 올리면 관리자가 답변을 달 수
 .. image:: ./images/openlab_potal_sitemap.png
 
 7단계) 플랫폼 소개
+-----------------------
 
 플랫폼 소개 화면은 교통빅데이터 유통 플랫폼을 소개하는 글을 볼 수 있습니다.
 
