@@ -9,6 +9,6 @@ OpenLab에서 제공하고 있는 메뉴얼을 볼 수 있습니다
 
     OPENLAB-Tutorial/index.rst
     OPENLAB-Manual/index.rst
-    OPENLAB-Porter/index.rst
+    OPENLAB-Portel/index.rst
     
     
